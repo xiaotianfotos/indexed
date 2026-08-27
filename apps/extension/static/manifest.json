@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "Indexed",
+  "version": "0.13.0",
+  "description": "把你主动选择的视频变成可由人类与 AI 查询的十秒画面和字幕向量记忆。",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA54nRsKssrnmuhOXdpCrLMeWqA2+GKiqfU75HV9AcSK3s/IWwjfemTxxRTsNom3qPRPU+oZsiB2DhKKclTbCt4opmJW225pkkqZ1ctW7KfHfmjs4OpGoHe1QWWJJdX1eVBbtO5Fa8SvK/uTIxH+HjjLM9tA6oHt1QH7NjP7PT2X5jj7QhMemj6l0ZyQ+Nk0M8ZL0F6ML4lO85ex5SvXbWQqqatuT+y0Sl0jXr7v1g5JYsXhdhK+S+YS4ID0poO34hb60pLOiV+nQ7jyuVDG2yCD5oFk1rI/TTckzD+Dir5a0IYYTN2HMDMRvXGVSTnTXMS4lihOXv6s75vcGbgNerhQIDAQAB",
+  "permissions": [
+    "alarms",
+    "scripting",
+    "storage",
+    "tabs",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://i.ytimg.com/*",
+    "https://www.bilibili.com/*",
+    "https://space.bilibili.com/*",
+    "https://i0.hdslb.com/*",
+    "https://i1.hdslb.com/*",
+    "https://i2.hdslb.com/*"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "icons": {
+    "16": "icons/indexed-16.png",
+    "32": "icons/indexed-32.png",
+    "48": "icons/indexed-48.png",
+    "128": "icons/indexed-128.png"
+  },
+  "action": {
+    "default_title": "Indexed",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/indexed-16.png",
+      "32": "icons/indexed-32.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/watch*",
+        "https://www.bilibili.com/video/*"
+      ],
+      "js": ["content-script.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

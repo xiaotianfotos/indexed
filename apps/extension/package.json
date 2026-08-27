@@ -1,0 +1,11 @@
+{
+  "name": "@indexed/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Chrome MV3 capture, queue, popup, and search surfaces.",
+  "dependencies": {
+    "@indexed/clients": "0.1.0",
+    "@indexed/contracts": "0.1.0"
+  }
+}

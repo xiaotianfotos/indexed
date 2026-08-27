@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Indexed</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <img class="mark" src="icons/indexed.svg" alt="" />
+        <h1>Indexed</h1>
+        <span id="connection" class="connection">连接中</span>
+      </header>
+
+      <section class="dashboard-card">
+        <div class="metrics">
+          <div><strong id="video-count">0</strong><span>视频</span></div>
+          <div><strong id="visual-count">0</strong><span>画面</span></div>
+          <div><strong id="text-count">0</strong><span>字幕</span></div>
+          <div><strong id="queue-count">0</strong><span>队列</span></div>
+        </div>
+        <div class="preview-row">
+          <label class="check"><input id="retain-preview" type="checkbox" checked />保存预览</label>
+        </div>
+        <details class="cost-estimate">
+          <summary>
+            <span>成本估算</span>
+            <strong id="cost-storage">计算中</strong>
+            <small id="cost-query">千次搜索 · —</small>
+          </summary>
+          <div class="cost-breakdown">
+            <div><span>当前索引</span><strong id="cost-size">—</strong></div>
+            <div><span>月存储</span><strong id="cost-storage-detail">—</strong></div>
+            <div><span>1000 次双索引搜索</span><strong id="cost-query-detail">—</strong></div>
+          </div>
+          <p id="cost-note">写入每月前 20GB 免费；金额为当前规模估算。</p>
+          <a href="https://help.aliyun.com/zh/oss/vector-billing-item" target="_blank" rel="noreferrer">阿里云官方计费规则 ↗</a>
+        </details>
+      </section>
+
+      <section class="history-card">
+        <div class="section-heading">
+          <strong>最近 24 小时</strong>
+          <div><span id="source-summary">同步中</span><button id="history-toggle" class="history-toggle" hidden>展开全部</button></div>
+        </div>
+        <div class="timeline-legend" aria-hidden="true">
+          <span><i class="saved"></i>已保存</span>
+          <span><i class="pending"></i>处理中</span>
+          <span><i class="text-only"></i>仅字幕</span>
+          <span><i class="empty-block"></i>空缺</span>
+        </div>
+        <div id="video-list" class="video-list"></div>
+        <div id="history-empty" class="history-empty" hidden>最近一天没有新记录</div>
+      </section>
+
+      <div class="popup-actions">
+        <button id="library" class="library-button">视频记忆 <span>↗</span></button>
+        <button id="local-library" class="library-button secondary-entry">本地资料库 <span>↗</span></button>
+        <button id="settings" class="settings-button" aria-label="设置">⚙</button>
+      </div>
+
+      <section id="settings-panel" class="settings-panel" hidden>
+        <div class="settings-title">
+          <strong>存储方式</strong>
+        </div>
+        <div class="mode-switch" role="group" aria-label="存储方式">
+          <button id="backend-cloud" type="button">阿里云</button>
+          <button id="backend-local" type="button">本地</button>
+        </div>
+
+        <div id="local-settings" hidden>
+          <label class="field">
+            <span>服务地址</span>
+            <input id="control-plane-url" type="url" placeholder="http://127.0.0.1:18767" />
+          </label>
+          <button id="sync-control-plane" class="save-settings" type="button">读取本地配置</button>
+        </div>
+
+        <div id="cloud-settings">
+          <label class="field">
+            <span>Embedding 服务</span>
+            <input id="embedding-url" type="url" placeholder="http://127.0.0.1:5007" />
+          </label>
+          <div class="field-pair">
+            <label class="field"><span>模型名</span><input id="embedding-model" type="text" /></label>
+            <label class="field"><span>维度</span><input id="embedding-dimension" type="number" min="1" /></label>
+          </div>
+          <div class="field-pair">
+            <label class="field"><span>Region</span><input id="oss-region" type="text" placeholder="cn-hangzhou" /></label>
+            <label class="field"><span>账号 ID</span><input id="oss-account-id" type="text" /></label>
+          </div>
+          <label class="field"><span>Vector Bucket</span><input id="oss-bucket" type="text" /></label>
+          <div class="field-pair">
+            <label class="field"><span>视频 Index</span><input id="oss-visual-index" type="text" /></label>
+            <label class="field"><span>字幕 Index</span><input id="oss-transcript-index" type="text" /></label>
+          </div>
+          <label class="field"><span>AccessKey ID</span><input id="oss-access-key-id" type="text" autocomplete="off" spellcheck="false" /></label>
+          <label class="field"><span>AccessKey Secret</span><input id="oss-access-key-secret" type="text" autocomplete="off" spellcheck="false" placeholder="粘贴后自动验证" /></label>
+          <label class="field"><span>STS Token（可选）</span><input id="oss-security-token" type="password" autocomplete="new-password" placeholder="使用长期 RAM AK 时留空" /></label>
+        </div>
+        <button id="save-settings" class="save-settings">保存并连接</button>
+        <p id="settings-status" class="settings-status"></p>
+      </section>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

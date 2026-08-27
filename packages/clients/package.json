@@ -1,0 +1,13 @@
+{
+  "name": "@indexed/clients",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Browser-compatible Embedding and OSS Vectors client.",
+  "dependencies": {
+    "@indexed/contracts": "0.1.0"
+  },
+  "exports": {
+    "./direct-cloud": "./src/direct-cloud.ts"
+  }
+}

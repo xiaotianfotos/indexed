@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+coverage/
+
+# Runtime configuration and credentials never belong in the repository.
+config.local.json
+secrets.json
+.indexed-extension-key

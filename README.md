@@ -1,6 +1,6 @@
 # Indexed
 
-[中文](#中文) · [English](#english)
+[中文](#中文) · [English](#english) · [安装文档](docs/extension-installation.zh-CN.md) · [Installation](docs/extension-installation.md)
 
 ## 中文
 
@@ -35,7 +35,19 @@ Indexed 采用本地优先、组件解耦的设计。插件、Dashboard 和 AI S
 
 ## 当前状态
 
-项目正在继续优化产品体验、配置流程与检索质量。架构和功能稳定后，会补充完整代码、Quick Start、部署说明和演示素材。
+项目将优先发布 Chrome 插件。当前源码已经支持用户主动选择 YouTube、B站视频，按十秒建立画面与字幕索引，并可直连多模态 Embedding 服务和阿里云 OSS Vectors。请参阅[本地安装说明](docs/extension-installation.zh-CN.md)。
+
+## TODO
+
+- [x] Chrome MV3 插件：播放器内主动启停、十秒视频分片、字幕索引和图文搜索
+- [x] 云端直连：Embedding 服务与阿里云 OSS Vectors 解耦配置
+- [x] 本地安装与更新的中英文文档
+- [ ] 完善凭据隔离、失败队列过期与本地缓存清理
+- [ ] 提供可下载的插件发行包和稳定的升级方式
+- [ ] 确定并补充开源许可证
+- [ ] 完善本地 Server、LanceDB 和 Dashboard 的安装及管理体验
+- [ ] 完成 CLI 与 Indexed Skill，让 AI Agent 可以查询和管理同一资料库
+- [ ] 补充配置迁移、隐私说明、完整演示和贡献指南
 
 ---
 
@@ -72,4 +84,16 @@ Indexed is local-first and loosely coupled. The extension, Dashboard, and AI Ski
 
 ### Status
 
-The product experience, configuration flow, and retrieval quality are still being refined. The full source code, Quick Start, deployment guide, and demos will be published once the architecture and core behavior are ready.
+The Chrome extension will be published first. The current source supports user-initiated capture on YouTube and Bilibili, ten-second visual and transcript indexes, and direct connections to a multimodal Embedding service and Alibaba Cloud OSS Vectors. See the [local installation guide](docs/extension-installation.md).
+
+### TODO
+
+- [x] Chrome MV3 extension with player opt-in, ten-second video segments, transcript indexing, and text/image search
+- [x] Decoupled configuration for direct Embedding and Alibaba Cloud OSS Vectors access
+- [x] Bilingual local installation and update guides
+- [ ] Harden credential isolation, failed-queue expiration, and local cache cleanup
+- [ ] Provide downloadable extension releases and a stable update path
+- [ ] Select and add an open-source license
+- [ ] Complete the installation and management experience for Local Server, LanceDB, and Dashboard
+- [ ] Finish the CLI and Indexed Skill so AI agents can query and manage the same library
+- [ ] Add configuration migration, privacy documentation, complete demos, and contribution guidelines

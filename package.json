@@ -1,0 +1,29 @@
+{
+  "name": "indexed-extension",
+  "version": "0.13.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/extension",
+    "packages/clients",
+    "packages/contracts"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "npm run typecheck && npm test && npm run build && npm run validate:build && npm run audit:hardcoding",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "validate:build": "node scripts/validate-build.mjs",
+    "audit:hardcoding": "node scripts/audit-hardcoding.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.6",
+    "@types/node": "^24.3.0",
+    "esbuild": "^0.25.9",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Indexed">
+  <rect x="5" y="5" width="118" height="118" rx="32" fill="#171922"/>
+  <rect x="15" y="15" width="98" height="98" rx="25" fill="#887af0"/>
+  <rect x="21" y="21" width="86" height="86" rx="19" fill="#171922"/>
+  <g fill="#7669dd" opacity=".42">
+    <rect x="29" y="29" width="18" height="18" rx="5"/>
+    <rect x="55" y="29" width="18" height="18" rx="5"/>
+    <rect x="81" y="29" width="18" height="18" rx="5"/>
+    <rect x="29" y="55" width="18" height="18" rx="5"/>
+    <rect x="55" y="55" width="18" height="18" rx="5"/>
+    <rect x="81" y="55" width="18" height="18" rx="5"/>
+    <rect x="29" y="81" width="18" height="18" rx="5"/>
+    <rect x="55" y="81" width="18" height="18" rx="5"/>
+    <rect x="81" y="81" width="18" height="18" rx="5"/>
+  </g>
+  <g fill="#69ddb0">
+    <rect x="29" y="29" width="18" height="18" rx="5"/>
+    <rect x="55" y="55" width="18" height="18" rx="5"/>
+    <rect x="81" y="81" width="18" height="18" rx="5"/>
+  </g>
+</svg>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Indexed</title>
+    <link rel="stylesheet" href="search.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="search.html" aria-label="Indexed 首页">
+        <img class="brand-mark" src="icons/indexed.svg" alt="" />
+        <strong>Indexed</strong>
+      </a>
+      <div class="library-stats">
+        <span><strong id="video-count">0</strong> 视频</span>
+        <span><strong id="visual-count">0</strong> 画面</span>
+        <span><strong id="text-count">0</strong> 字幕</span>
+      </div>
+      <div class="topbar-actions">
+        <button id="show-library" class="show-library" type="button">视频记录</button>
+        <span id="connection" class="connection" aria-live="polite">连接中</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>搜索看过的片段</h1>
+        <form id="search-form" class="search-box">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" /></svg>
+          <input id="query" type="search" autocomplete="off" autofocus placeholder="描述画面或台词，也可以粘贴图片" aria-label="搜索视频片段" />
+          <label class="image-picker" title="选择查询图片">
+            <input id="image-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+            <span aria-hidden="true">▧</span>
+            <span>图片</span>
+          </label>
+          <button id="search-submit" type="submit">搜索</button>
+        </form>
+        <div id="image-query-preview" class="image-query-preview" hidden>
+          <img id="image-preview-image" alt="待搜索图片预览" />
+          <strong id="image-preview-name">剪贴板图片</strong>
+          <button id="remove-image" type="button" aria-label="移除查询图片">×</button>
+        </div>
+        <div id="search-state" class="search-state" aria-live="polite" hidden></div>
+      </section>
+
+      <section id="library-section" class="library-section">
+        <div class="library-heading">
+          <div>
+            <h2>视频记录</h2>
+            <p>管理已经写入云端的画面与字幕索引</p>
+          </div>
+          <span id="library-video-count" class="result-count">0</span>
+        </div>
+        <div id="library-state" class="library-state" aria-live="polite">正在读取云端记录…</div>
+        <div id="library-videos" class="library-videos"></div>
+        <nav id="library-pagination" class="pagination" aria-label="视频记录分页" hidden></nav>
+      </section>
+
+      <section id="visual-lane" class="lane" hidden>
+        <div class="lane-heading">
+          <h2>画面</h2>
+          <span id="visual-result-count" class="result-count">0</span>
+        </div>
+        <div id="visual-results" class="visual-grid"></div>
+        <nav id="visual-pagination" class="pagination" aria-label="画面结果分页" hidden></nav>
+      </section>
+
+      <section id="text-lane" class="lane" hidden>
+        <div class="lane-heading">
+          <h2>字幕</h2>
+          <span id="text-result-count" class="result-count">0</span>
+        </div>
+        <div id="text-results" class="text-grid"></div>
+        <nav id="text-pagination" class="pagination" aria-label="字幕结果分页" hidden></nav>
+      </section>
+    </main>
+
+    <dialog id="delete-dialog" class="delete-dialog" aria-labelledby="delete-dialog-title">
+      <form method="dialog">
+        <div class="delete-icon" aria-hidden="true">×</div>
+        <h2 id="delete-dialog-title">删除这个视频的记忆？</h2>
+        <p id="delete-dialog-name" class="delete-dialog-name"></p>
+        <div id="delete-dialog-summary" class="delete-dialog-summary"></div>
+        <p class="delete-warning">云端向量删除后无法恢复。正在播放的视频会停止记忆，待处理队列和本地预览也会一并清理。</p>
+        <p id="delete-dialog-status" class="delete-dialog-status" aria-live="polite"></p>
+        <div class="delete-dialog-actions">
+          <button id="delete-cancel" value="cancel" type="submit">取消</button>
+          <button id="delete-confirm" class="danger" value="default" type="button">永久删除</button>
+        </div>
+      </form>
+    </dialog>
+    <script src="search.js"></script>
+  </body>
+</html>
