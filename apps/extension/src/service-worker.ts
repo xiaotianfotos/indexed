@@ -2,6 +2,7 @@
 import {
   DIRECT_DEFAULT_CONFIG,
   deleteVectors,
+  discoverEmbeddingConfig,
   embeddingSpace,
   embedImage,
   embedTranscript,
@@ -1304,6 +1305,7 @@ async function directSearch(payload) {
   }
   const filter = metadataFilter({
     embedding_model: config.embeddingModel,
+    embedding_space: embeddingSpace(config),
     video_id: payload.video_id || payload.videoId,
     channel_id: payload.channel_id || payload.channelId,
   });
@@ -1369,6 +1371,7 @@ async function directImageSearch(payload) {
   const vector = await embedImage(encoded, mimeType, payload.query || "", config);
   const filter = metadataFilter({
     embedding_model: config.embeddingModel,
+    embedding_space: embeddingSpace(config),
     video_id: payload.video_id || payload.videoId,
     channel_id: payload.channel_id || payload.channelId,
   });
@@ -1411,6 +1414,7 @@ async function directStats(videoId = "") {
   }
   const filter = metadataFilter({
     embedding_model: config.embeddingModel,
+    embedding_space: embeddingSpace(config),
     video_id: videoId,
   });
   const [visualRows, transcriptRows] = await Promise.all([
@@ -1689,6 +1693,94 @@ async function deleteVectorKeys(indexName, keys, config) {
   return uniqueKeys.length;
 }
 
+function resetTarget(config) {
+  return [
+    String(config.ossRegion || ""),
+    String(config.ossAccountId || ""),
+    String(config.ossBucket || ""),
+    String(config.ossVisualIndex || ""),
+    String(config.ossTranscriptIndex || ""),
+  ].join("/");
+}
+
+async function stopAllOpenVideoTabs() {
+  const tabs = await chrome.tabs.query({
+    url: ["https://www.youtube.com/watch*", "https://www.bilibili.com/video/*"],
+  });
+  await Promise.all(tabs.map(async (tab) => {
+    if (!tab.id) return;
+    try { await chrome.tabs.sendMessage(tab.id, { type: "STOP_INDEXING" }); } catch {}
+  }));
+  return tabs.length;
+}
+
+async function waitForQueueIdle(timeoutMs = 120000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (!activeQueueItems.size) return true;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  return false;
+}
+
+async function resetVideoMemoryInfo() {
+  const config = await readConfig();
+  if (config.backendMode === "local") throw new Error("清空云端索引仅适用于阿里云模式");
+  const [visualRows, transcriptRows] = await Promise.all([
+    listVectors(config.ossVisualIndex, config, { returnMetadata: false }),
+    listVectors(config.ossTranscriptIndex, config, { returnMetadata: false }),
+  ]);
+  return {
+    ok: true,
+    target: resetTarget(config),
+    bucket: config.ossBucket,
+    visual_index: config.ossVisualIndex,
+    transcript_index: config.ossTranscriptIndex,
+    visual_count: visualRows.length,
+    transcript_count: transcriptRows.length,
+  };
+}
+
+async function resetAllVideoMemory(payload = {}) {
+  const config = await readConfig();
+  if (config.backendMode === "local") throw new Error("清空云端索引仅适用于阿里云模式");
+  const target = resetTarget(config);
+  if (!target || String(payload.target || "") !== target) throw new Error("索引目标已变化，请重新确认");
+  await chrome.storage.local.set({ [PROCESSING_PAUSED_KEY]: true });
+  const stoppedTabs = await stopAllOpenVideoTabs();
+  try {
+    if (!await waitForQueueIdle()) throw new Error("仍有分片正在写入，请稍后重试");
+    const [visualRows, transcriptRows] = await Promise.all([
+      listVectors(config.ossVisualIndex, config, { returnMetadata: false }),
+      listVectors(config.ossTranscriptIndex, config, { returnMetadata: false }),
+    ]);
+    const visualDeleted = await deleteVectorKeys(config.ossVisualIndex, visualRows.map((row) => row.key), config);
+    const transcriptDeleted = await deleteVectorKeys(config.ossTranscriptIndex, transcriptRows.map((row) => row.key), config);
+    const [queueDeleted, processedDeleted, previewsDeleted, sessionsDeleted] = await Promise.all([
+      storeDeleteMatching(QUEUE_STORE, () => true),
+      storeDeleteMatching(PROCESSED_STORE, () => true),
+      storeDeleteMatching(PREVIEW_STORE, () => true),
+      storeDeleteMatching(SESSION_STORE, () => true),
+    ]);
+    await chrome.storage.local.set({
+      [REBUILD_JOB_KEY]: null,
+      videoIndexingOptIns: {},
+      autoIndexWatched: false,
+    });
+    libraryRowsCache = null;
+    return {
+      ok: true,
+      target,
+      visual_deleted: visualDeleted,
+      transcript_deleted: transcriptDeleted,
+      local_deleted: queueDeleted + processedDeleted + previewsDeleted + sessionsDeleted,
+      stopped_tabs: stoppedTabs,
+    };
+  } finally {
+    await chrome.storage.local.set({ [PROCESSING_PAUSED_KEY]: false });
+  }
+}
+
 async function deleteVideoMemory(payload = {}) {
   const videoId = String(payload.video_id || payload.videoId || "").trim();
   const sourceSite = String(payload.source_site || payload.sourceSite || "youtube").trim().toLowerCase();
@@ -1719,7 +1811,11 @@ async function deleteVideoMemory(payload = {}) {
     const queueAfter = await storeDeleteMatching(QUEUE_STORE, (item) =>
       itemMatchesVideo(item, sourceSite, videoId)
     );
-    const filter = metadataFilter({ video_id: videoId, embedding_model: config.embeddingModel });
+    const filter = metadataFilter({
+      video_id: videoId,
+      embedding_model: config.embeddingModel,
+      embedding_space: embeddingSpace(config),
+    });
     const [visualRows, transcriptRows] = await Promise.all([
       listVectors(config.ossVisualIndex, config, { filter }),
       listVectors(config.ossTranscriptIndex, config, { filter }),
@@ -1770,7 +1866,10 @@ async function videoLibraryStatus() {
     };
   }
   if (!libraryRowsCache || Date.now() - libraryRowsCache.updated_at > 12000) {
-    const filter = metadataFilter({ embedding_model: config.embeddingModel });
+    const filter = metadataFilter({
+      embedding_model: config.embeddingModel,
+      embedding_space: embeddingSpace(config),
+    });
     const [visual, transcript] = await Promise.all([
       listVectors(config.ossVisualIndex, config, { filter }),
       listVectors(config.ossTranscriptIndex, config, { filter }),
@@ -1911,17 +2010,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message?.type === "SAVE_CONFIG") {
       const current = await readConfig();
       const incoming = message.config || {};
+      const nextEmbeddingBaseUrl = String(incoming.embeddingBaseUrl || current.embeddingBaseUrl).replace(/\/+$/, "");
+      const nextEmbeddingModel = String(incoming.embeddingModel || current.embeddingModel);
+      const nextEmbeddingDimension = Number(incoming.embeddingDimension || current.embeddingDimension);
+      const nextEmbeddingInputStyle = String(incoming.embeddingInputStyle || current.embeddingInputStyle || "auto");
+      const embeddingIdentityChanged = nextEmbeddingBaseUrl !== String(current.embeddingBaseUrl || "").replace(/\/+$/, "")
+        || nextEmbeddingModel !== String(current.embeddingModel || "")
+        || nextEmbeddingDimension !== Number(current.embeddingDimension || 0)
+        || nextEmbeddingInputStyle !== String(current.embeddingInputStyle || "auto");
+      const hasIncomingEmbeddingSpace = Object.prototype.hasOwnProperty.call(incoming, "embeddingSpace");
       const next = {
         ...current,
         backendMode: incoming.backendMode
           ? (incoming.backendMode === "local" ? "local" : "cloud")
           : current.backendMode,
         controlPlaneUrl: String(incoming.controlPlaneUrl || current.controlPlaneUrl || DIRECT_DEFAULT_CONFIG.controlPlaneUrl).replace(/\/+$/, ""),
-        embeddingBaseUrl: String(incoming.embeddingBaseUrl || current.embeddingBaseUrl).replace(/\/+$/, ""),
-        embeddingModel: String(incoming.embeddingModel || current.embeddingModel),
-        embeddingDimension: Number(incoming.embeddingDimension || current.embeddingDimension),
-        embeddingInputStyle: String(incoming.embeddingInputStyle || current.embeddingInputStyle || "auto"),
-        embeddingSpace: String(incoming.embeddingSpace || current.embeddingSpace || ""),
+        embeddingBaseUrl: nextEmbeddingBaseUrl,
+        embeddingModel: nextEmbeddingModel,
+        embeddingDimension: nextEmbeddingDimension,
+        embeddingInputStyle: nextEmbeddingInputStyle,
+        embeddingSpace: hasIncomingEmbeddingSpace
+          ? String(incoming.embeddingSpace || "")
+          : (embeddingIdentityChanged ? "" : String(current.embeddingSpace || "")),
         ossRegion: String(incoming.ossRegion || current.ossRegion),
         ossAccountId: String(incoming.ossAccountId || current.ossAccountId),
         ossBucket: String(incoming.ossBucket || current.ossBucket),
@@ -1956,6 +2066,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         ? localServerRequest(proposed, "/api/status")
         : testDirectConfig(proposed);
     }
+    if (message?.type === "DISCOVER_EMBEDDING") {
+      const current = await readConfig();
+      return { ok: true, ...(await discoverEmbeddingConfig({ ...current, ...(message.config || {}) })) };
+    }
+    if (message?.type === "RESET_VIDEO_MEMORY_INFO") return resetVideoMemoryInfo();
+    if (message?.type === "RESET_ALL_VIDEO_MEMORY") return resetAllVideoMemory(message.payload || {});
     if (message?.type === "API_INFO") {
       const config = await readConfig();
       return { mode: config.backendMode, baseUrl: config.backendMode === "local" ? config.controlPlaneUrl : "" };

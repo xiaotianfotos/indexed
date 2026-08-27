@@ -84,8 +84,8 @@
             <input id="embedding-url" type="url" placeholder="http://127.0.0.1:5007" />
           </label>
           <div class="field-pair">
-            <label class="field"><span>模型名</span><input id="embedding-model" type="text" /></label>
-            <label class="field"><span>维度</span><input id="embedding-dimension" type="number" min="1" /></label>
+            <label class="field"><span>模型名</span><input id="embedding-model" type="text" placeholder="自动识别" readonly /></label>
+            <label class="field"><span>维度</span><input id="embedding-dimension" type="number" min="1" placeholder="自动识别" readonly /></label>
           </div>
           <div class="field-pair">
             <label class="field"><span>Region</span><input id="oss-region" type="text" placeholder="cn-hangzhou" /></label>
@@ -99,6 +99,7 @@
           <label class="field"><span>AccessKey ID</span><input id="oss-access-key-id" type="text" autocomplete="off" spellcheck="false" /></label>
           <label class="field"><span>AccessKey Secret</span><input id="oss-access-key-secret" type="text" autocomplete="off" spellcheck="false" placeholder="粘贴后自动验证" /></label>
           <label class="field"><span>STS Token（可选）</span><input id="oss-security-token" type="password" autocomplete="new-password" placeholder="使用长期 RAM AK 时留空" /></label>
+          <button id="reset-memory" class="reset-memory" type="button">清空视频索引</button>
         </div>
         <button id="save-settings" class="save-settings">保存并连接</button>
         <p id="settings-status" class="settings-status"></p>

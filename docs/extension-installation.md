@@ -46,12 +46,12 @@ This mode does not require an Indexed application backend. The extension calls y
 Enter the following values:
 
 - Embedding service URL, for example `http://127.0.0.1:5007`
-- Model name and output dimension; the dimension must match the indexes
+- Indexed discovers the model name and probes its output dimension automatically; that dimension must match the indexes
 - Alibaba Cloud Region, account ID, and Vector Bucket name
 - Visual Index and Transcript Index names
 - A least-privilege RAM AccessKey ID and Secret, plus an optional STS token
 
-Enter the service root URL without appending `/v1/embeddings`. On the first connection, Chrome asks for permission to access the configured model origin and OSS Vectors endpoint.
+Enter the service root URL without appending `/v1/embeddings`. Indexed reads `/v1/models` and makes one lightweight Embedding request to confirm the dimension. On the first connection, Chrome asks for permission to access the configured model origin and OSS Vectors endpoint.
 
 The AccessKey ID, Secret, and STS token remain on the current device. Non-secret settings such as the model endpoint, model name, and OSS resource names use Chrome Sync.
 

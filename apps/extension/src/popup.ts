@@ -43,6 +43,7 @@ const elements = Object.fromEntries(
     "oss-access-key-id",
     "oss-access-key-secret",
     "oss-security-token",
+    "reset-memory",
     "save-settings",
     "settings-status",
   ].map((id) => [id, document.getElementById(id)])
@@ -64,6 +65,11 @@ let credentialAutoSaveTimer = 0;
 let accessKeyIdAutoSaveTimer = 0;
 let credentialSaveChain = Promise.resolve();
 let backendMode = "cloud";
+let resolvedEmbeddingInputStyle = "auto";
+let resolvedEmbeddingSpace = "";
+let discoveredEmbeddingUrl = "";
+let embeddingDiscoveryTimer = 0;
+let embeddingDiscoveryInFlight = false;
 
 function setBackendMode(mode) {
   backendMode = mode === "local" ? "local" : "cloud";
@@ -410,7 +416,12 @@ async function initialize() {
   elements["control-plane-url"].value = config.controlPlaneUrl || DIRECT_DEFAULT_CONFIG.controlPlaneUrl;
   elements["embedding-url"].value = config.embeddingBaseUrl || DIRECT_DEFAULT_CONFIG.embeddingBaseUrl;
   elements["embedding-model"].value = config.embeddingModel || DIRECT_DEFAULT_CONFIG.embeddingModel;
-  elements["embedding-dimension"].value = String(config.embeddingDimension || DIRECT_DEFAULT_CONFIG.embeddingDimension);
+  elements["embedding-dimension"].value = config.embeddingModel
+    ? String(config.embeddingDimension || DIRECT_DEFAULT_CONFIG.embeddingDimension)
+    : "";
+  resolvedEmbeddingInputStyle = config.embeddingInputStyle || DIRECT_DEFAULT_CONFIG.embeddingInputStyle;
+  resolvedEmbeddingSpace = config.embeddingSpace || "";
+  discoveredEmbeddingUrl = config.embeddingModel ? String(config.embeddingBaseUrl || "").replace(/\/+$/, "") : "";
   elements["oss-region"].value = config.ossRegion || DIRECT_DEFAULT_CONFIG.ossRegion;
   elements["oss-account-id"].value = config.ossAccountId || DIRECT_DEFAULT_CONFIG.ossAccountId;
   elements["oss-bucket"].value = config.ossBucket || DIRECT_DEFAULT_CONFIG.ossBucket;
@@ -450,6 +461,8 @@ function formConfig() {
     embeddingBaseUrl: elements["embedding-url"].value.trim().replace(/\/+$/, ""),
     embeddingModel: elements["embedding-model"].value.trim(),
     embeddingDimension: Number(elements["embedding-dimension"].value),
+    embeddingInputStyle: resolvedEmbeddingInputStyle,
+    embeddingSpace: resolvedEmbeddingSpace,
     ossRegion: elements["oss-region"].value.trim(),
     ossAccountId: elements["oss-account-id"].value.trim(),
     ossBucket: elements["oss-bucket"].value.trim(),
@@ -463,6 +476,55 @@ function formConfig() {
 
 function configFingerprint(config) {
   return JSON.stringify(config);
+}
+
+async function discoverEmbedding({ force = false } = {}) {
+  if (backendMode !== "cloud" || embeddingDiscoveryInFlight) return false;
+  const baseUrl = elements["embedding-url"].value.trim().replace(/\/+$/, "");
+  if (!baseUrl) return false;
+  if (!force && baseUrl === discoveredEmbeddingUrl && elements["embedding-model"].value.trim()) return true;
+  embeddingDiscoveryInFlight = true;
+  elements["settings-status"].textContent = "正在识别向量模型…";
+  try {
+    const origin = `${new URL(baseUrl).origin}/*`;
+    const allowed = await chrome.permissions.request({ origins: [origin] });
+    if (!allowed) throw new Error("未获得向量服务访问权限");
+    const discovered = await message({
+      type: "DISCOVER_EMBEDDING",
+      config: { embeddingBaseUrl: baseUrl, embeddingModel: "", embeddingDimension: 0, embeddingInputStyle: "auto", embeddingSpace: "" },
+    });
+    if (discovered.error || !discovered.ok) throw new Error(discovered.error || "无法识别向量模型");
+    elements["embedding-model"].value = discovered.model;
+    elements["embedding-dimension"].value = String(discovered.dimension);
+    resolvedEmbeddingInputStyle = discovered.inputStyle || "auto";
+    resolvedEmbeddingSpace = discovered.space || "";
+    discoveredEmbeddingUrl = baseUrl;
+    const saved = await message({
+      type: "SAVE_CONFIG",
+      config: {
+        backendMode,
+        embeddingBaseUrl: baseUrl,
+        embeddingModel: discovered.model,
+        embeddingDimension: Number(discovered.dimension),
+        embeddingInputStyle: resolvedEmbeddingInputStyle,
+        embeddingSpace: resolvedEmbeddingSpace,
+      },
+    });
+    if (saved.error) throw new Error(saved.error);
+    invalidateCredentialValidation();
+    elements["settings-status"].textContent = `已识别 ${discovered.model} · ${discovered.dimension} 维`;
+    return true;
+  } catch (error) {
+    discoveredEmbeddingUrl = "";
+    resolvedEmbeddingInputStyle = "auto";
+    resolvedEmbeddingSpace = "";
+    elements["embedding-model"].value = "";
+    elements["embedding-dimension"].value = "";
+    elements["settings-status"].textContent = String(error.message || error);
+    return false;
+  } finally {
+    embeddingDiscoveryInFlight = false;
+  }
 }
 
 async function ensureConnectionPermissions(config) {
@@ -552,6 +614,7 @@ async function validateSettings(config, {
 }
 
 async function saveSettings() {
+  if (backendMode === "cloud" && !await discoverEmbedding({ force: true })) return;
   const config = formConfig();
   if (validatedConfigFingerprint !== configFingerprint(config)) {
     const valid = await validateSettings(config);
@@ -710,6 +773,48 @@ for (const id of [
   elements[id].addEventListener("input", invalidateCredentialValidation);
 }
 
+elements["embedding-url"].addEventListener("input", () => {
+  window.clearTimeout(embeddingDiscoveryTimer);
+  discoveredEmbeddingUrl = "";
+  resolvedEmbeddingInputStyle = "auto";
+  resolvedEmbeddingSpace = "";
+  elements["embedding-model"].value = "";
+  elements["embedding-dimension"].value = "";
+  const value = elements["embedding-url"].value.trim();
+  if (!value) return;
+  embeddingDiscoveryTimer = window.setTimeout(() => void discoverEmbedding(), 650);
+});
+elements["embedding-url"].addEventListener("blur", () => {
+  window.clearTimeout(embeddingDiscoveryTimer);
+  void discoverEmbedding();
+});
+
+async function resetVideoMemory() {
+  const button = elements["reset-memory"];
+  button.disabled = true;
+  elements["settings-status"].textContent = "正在读取索引…";
+  try {
+    const info = await message({ type: "RESET_VIDEO_MEMORY_INFO" });
+    if (info.error || !info.ok) throw new Error(info.error || "无法读取索引");
+    const confirmed = window.confirm(
+      `永久清空 ${info.bucket} 中的两个索引？\n\n${info.visual_index}：${info.visual_count} 条\n${info.transcript_index}：${info.transcript_count} 条\n\n云端向量和本地队列都会删除，无法恢复。`
+    );
+    if (!confirmed) {
+      elements["settings-status"].textContent = "已取消";
+      return;
+    }
+    elements["settings-status"].textContent = "正在清空视频索引…";
+    const result = await message({ type: "RESET_ALL_VIDEO_MEMORY", payload: { target: info.target } });
+    if (result.error || !result.ok) throw new Error(result.error || "清空失败");
+    elements["settings-status"].textContent = `已清空 ${result.visual_deleted + result.transcript_deleted} 条云端向量`;
+    await refreshStats();
+  } catch (error) {
+    elements["settings-status"].textContent = String(error.message || error);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 async function syncFromControlPlane() {
   const baseUrl = elements["control-plane-url"].value.trim().replace(/\/+$/, "");
   if (!baseUrl) return;
@@ -735,6 +840,9 @@ async function syncFromControlPlane() {
     elements["embedding-url"].value = synced.embeddingBaseUrl;
     elements["embedding-model"].value = synced.embeddingModel;
     elements["embedding-dimension"].value = String(synced.embeddingDimension);
+    resolvedEmbeddingInputStyle = synced.embeddingInputStyle || "auto";
+    resolvedEmbeddingSpace = synced.embeddingSpace || "";
+    discoveredEmbeddingUrl = synced.embeddingBaseUrl;
     elements["settings-status"].textContent = `已读取 ${remote.label || remote.profileId}`;
     invalidateCredentialValidation();
   } catch (error) {
@@ -769,4 +877,5 @@ elements["history-toggle"].addEventListener("click", () => {
 });
 elements["save-settings"].addEventListener("click", () => void saveSettings());
 elements["sync-control-plane"].addEventListener("click", () => void syncFromControlPlane());
+elements["reset-memory"].addEventListener("click", () => void resetVideoMemory());
 void initialize().then(() => window.setInterval(() => void refreshProgress(), 3000));

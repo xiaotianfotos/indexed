@@ -113,10 +113,14 @@ button { font: inherit; cursor: pointer; }
 .field { display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 8px; margin-top: 8px; color: #8a90a0; font-size: 10px; }
 .field select, .field input { width: 100%; margin: 0; padding: 8px 9px; border: 1px solid #2b2e38; border-radius: 9px; outline: 0; color: #dfe1e8; background: #101217; }
 .field input:focus, .field select:focus { border-color: #6860bd; }
+.field input[readonly] { color: #9da3b2; background: #0e1015; }
 .field-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .field-pair .field { grid-template-columns: 1fr; gap: 4px; }
 .save-settings { width: 100%; margin-top: 11px; padding: 9px; border: 1px solid #3b3766; border-radius: 9px; color: #dcd9ff; background: #24203e; }
 .save-settings:disabled { cursor: wait; opacity: .58; }
+.reset-memory { width: 100%; margin-top: 14px; padding: 9px; border: 1px solid rgba(211, 88, 98, .34); border-radius: 9px; color: #e69aa1; background: rgba(117, 37, 45, .13); }
+.reset-memory:hover { border-color: rgba(224, 101, 111, .58); background: rgba(117, 37, 45, .22); }
+.reset-memory:disabled { cursor: wait; opacity: .55; }
 .settings-status { min-height: 14px; margin-top: 8px; color: #777e8e; font-size: 9px; line-height: 1.45; }
 .search-card { margin-top: 12px; padding: 12px; }
 .search-box { display: flex; gap: 7px; }

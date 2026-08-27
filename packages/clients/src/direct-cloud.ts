@@ -35,6 +35,41 @@ export function embeddingSpace(config) {
   return `${model}-${dimension}-${embeddingInputStyle(config)}-indexed-v1`.replace(/[^a-z0-9._-]+/g, "-");
 }
 
+export async function discoverEmbeddingConfig(config) {
+  const baseUrl = normalizeUrl(config.embeddingBaseUrl);
+  if (!baseUrl) throw new Error("请填写 Embedding 服务地址");
+  const modelResponse = await fetch(`${baseUrl}/v1/models`);
+  if (!modelResponse.ok) throw new Error(`Embedding 模型发现返回 ${modelResponse.status}`);
+  const modelBody = await modelResponse.json().catch(() => ({}));
+  const models = (modelBody.data || []).map((item) => String(item?.id || "").trim()).filter(Boolean);
+  if (!models.length) throw new Error("Embedding 服务没有返回可用模型");
+  const requestedModel = String(config.embeddingModel || "").trim();
+  const model = models.includes(requestedModel) ? requestedModel : models[0];
+  const probeConfig = {
+    ...config,
+    embeddingBaseUrl: baseUrl,
+    embeddingModel: model,
+    embeddingDimension: 0,
+    embeddingInputStyle: "auto",
+    embeddingSpace: "",
+  };
+  const vector = await embeddingRequest(
+    textMessages("Indexed model discovery probe", "Represent this text for semantic retrieval."),
+    probeConfig
+  );
+  const discovered = {
+    baseUrl,
+    model,
+    dimension: vector.length,
+    inputStyle: embeddingInputStyle(probeConfig),
+  };
+  return { ...discovered, space: embeddingSpace({
+    embeddingModel: discovered.model,
+    embeddingDimension: discovered.dimension,
+    embeddingInputStyle: discovered.inputStyle,
+  }) };
+}
+
 const VISUAL_QUERY_INSTRUCTION =
   "Represent this text query for retrieving matching screenshots, software interfaces, diagrams, demonstrations, scenes, and video frames.";
 const VISUAL_CONTENT_INSTRUCTION =

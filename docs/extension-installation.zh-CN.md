@@ -46,12 +46,12 @@ dist/extension
 需要填写：
 
 - Embedding 服务地址，例如 `http://127.0.0.1:5007`
-- 模型名和输出维度；必须与创建索引时的维度一致
+- 插件会自动读取模型名并探测输出维度；该维度必须与创建索引时一致
 - 阿里云 Region、账号 ID 和 Vector Bucket 名称
 - 画面 Index 和字幕 Index
 - 具有所需最小权限的 RAM AccessKey ID、Secret，以及可选的 STS Token
 
-Embedding 地址填写服务根地址，不要重复添加 `/v1/embeddings`。首次连接时，Chrome 会请求访问模型服务和 OSS Vectors Endpoint 的权限。
+Embedding 地址填写服务根地址，不要重复添加 `/v1/embeddings`。插件通过 `/v1/models` 识别模型，并用一次轻量 Embedding 请求确认维度。首次连接时，Chrome 会请求访问模型服务和 OSS Vectors Endpoint 的权限。
 
 AccessKey ID、Secret 和 STS Token 只保存在当前设备；模型地址、模型名和 OSS 资源名称等非密钥配置使用 Chrome Sync。
 
