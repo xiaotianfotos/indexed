@@ -365,10 +365,7 @@ export function metadataFilter(values = {}) {
 }
 
 export async function testDirectConfig(config) {
-  const baseUrl = normalizeUrl(config.embeddingBaseUrl);
-  const modelResponse = await fetch(`${baseUrl}/v1/models`);
-  if (!modelResponse.ok) throw new Error(`Embedding 健康检查返回 ${modelResponse.status}`);
-  const modelBody = await modelResponse.json().catch(() => ({}));
+  const discovered = await discoverEmbeddingConfig(config);
   const rows = await listVectors(config.ossVisualIndex, config, {
     pageSize: 1,
     maxItems: 1,
@@ -376,7 +373,7 @@ export async function testDirectConfig(config) {
   });
   return {
     ok: true,
-    embedding: { model: modelBody.data?.[0]?.id || config.embeddingModel },
+    embedding: discovered,
     storage: { provider: "oss_vectors_direct", provider_label: "阿里云 OSS Vector Bucket（插件直连）" },
     sampleCount: rows.length,
   };

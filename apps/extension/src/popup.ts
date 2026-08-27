@@ -435,10 +435,14 @@ async function initialize() {
   elements["oss-security-token"].placeholder = config.hasSecurityToken
     ? "已保存；留空表示不修改"
     : "使用长期 RAM AK 时留空";
+  if (backendMode === "cloud" && elements["embedding-url"].value.trim()) {
+    await discoverEmbedding({ force: true });
+    await refreshStats();
+  }
   const cloudFieldsComplete = [
-    config.embeddingBaseUrl,
-    config.embeddingModel,
-    Number(config.embeddingDimension) > 0 ? String(config.embeddingDimension) : "",
+    elements["embedding-url"].value,
+    elements["embedding-model"].value,
+    Number(elements["embedding-dimension"].value) > 0 ? elements["embedding-dimension"].value : "",
     config.ossRegion,
     config.ossAccountId,
     config.ossBucket,
