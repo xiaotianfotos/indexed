@@ -113,6 +113,8 @@ npm run test:browser
 
 内部设计文档、基准报告和本地配置不随源码发布。根目录 README、许可证、第三方声明与功能性 Skill 保持公开。
 
+历史 Python 服务、模型转换及离线参考工具已退出当前公开源码；现有模型包可直接由 Swift 后端加载。
+
 ## English
 
 Indexed is a local-first multimodal search application for explicitly added images, videos, documents, and user-selected YouTube / Bilibili video captures. Results retain source paths, URLs, timestamps, and text passages for both people and AI agents.

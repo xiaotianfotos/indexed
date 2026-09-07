@@ -4,7 +4,22 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import test from 'node:test';
-import { auditRepository, inspectContent, privatePath } from '../audit-public-source.mjs';
+import { auditRepository, inspectContent, privatePath, historicalToolPath } from '../audit-public-source.mjs';
+
+test('retired Python and reference tools stay outside current publication inputs', context => {
+  for (const file of ['native/apple-embedding/service.py', 'native/apple-embedding/requirements.txt', 'native/apple-embedding/validation/reference.ts']) assert(historicalToolPath(file));
+  for (const file of ['native/apple-embedding/tests/native-service.test.ts', 'native/apple-embedding/build_native_service.sh', 'native/apple-embedding/swift/Sources/AppleEmbeddingCore/MLXWeMMEngine.swift']) assert(!historicalToolPath(file));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'indexed-retired-tools-'));
+  context.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const git = (...args) => execFileSync('git', args, { cwd: root, stdio: 'pipe' });
+  git('init'); git('config', 'user.name', 'Fixture'); git('config', 'user.email', 'fixture@example.invalid');
+  fs.mkdirSync(path.join(root, 'native/apple-embedding'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'native/apple-embedding/service.py'), '# archived reference\n');
+  git('add', '.'); git('commit', '-m', 'historical fixture');
+  assert(auditRepository(root).findings.some(x => x.rule === 'retired maintainer tool'));
+  git('rm', 'native/apple-embedding/service.py'); git('commit', '-m', 'retire fixture');
+  assert.deepEqual(auditRepository(root, { historyRefs: ['HEAD'] }).findings, []);
+});
 
 test('public surface excludes private documents and artifacts while retaining legal and functional files', () => {
   for (const file of ['docs/plan.json', 'AGENTS.md', 'docs/README.md', 'packages/core/README.md', '.env.production', '.data/config.json', 'native/apple-embedding/results/run.json', 'model.safetensors', 'vision/foo.mlmodelc/weights/a.bin']) assert.equal(privatePath(file), true, file);

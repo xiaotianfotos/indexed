@@ -39,3 +39,16 @@ secrets.json
 !/.github/workflows/ci.yml
 !/.github/workflows/pr-review.yml
 /.github/dependabot.yml
+
+# Historical Python, conversion and reference tools are kept locally only.
+/native/apple-embedding/*.py
+/native/apple-embedding/requirements*.txt
+/native/apple-embedding/private_ane/
+/native/apple-embedding/validation/
+/native/apple-embedding/mixed-query-set/
+/native/apple-embedding/benchmark_*.ts
+/native/apple-embedding/electron-service-client.mjs
+/native/apple-embedding/test_electron_client.mjs
+/native/apple-embedding/inspect_coreml_compute_plan.swift
+/native/apple-embedding/omlx-short-sequence.patch
+/tests/native-reference-tools.test.ts

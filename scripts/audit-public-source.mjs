@@ -26,6 +26,15 @@ export function privatePath(file) {
   return /\.(?:safetensors|sqlite3?|db|npz|pem|p12|pfx)$/i.test(name) || parts.some(x => /\.(?:mlmodelc|mlpackage)$/.test(x));
 }
 
+export function historicalToolPath(file) {
+  if (file === 'tests/native-reference-tools.test.ts') return true;
+  if (!file.startsWith('native/apple-embedding/')) return false;
+  const relative = file.slice('native/apple-embedding/'.length);
+  return /\.py$/.test(relative) || /^requirements[^/]*\.txt$/.test(relative)
+    || /^(?:validation|mixed-query-set|private_ane)\//.test(relative)
+    || /^(?:benchmark_[^/]+\.ts|electron-service-client\.mjs|test_electron_client\.mjs|inspect_coreml_compute_plan\.swift|omlx-short-sequence\.patch)$/.test(relative);
+}
+
 export function inspectContent(file, bytes) {
   const findings = [];
   // Match known token formats even in binary metadata. Never print matched bytes.
@@ -57,6 +66,8 @@ export function auditRepository(cwd, { historyRefs = [] } = {}) {
   let historyBlobs = 0;
   const inspect = (file, bytes, source) => {
     if (privatePath(file)) findings.push({ source, file, rule: 'private/distribution-excluded path' });
+    // Retirement applies to current publication inputs, without rewriting public history.
+    if (!source.startsWith('history:') && historicalToolPath(file)) findings.push({ source, file, rule: 'retired maintainer tool' });
     findings.push(...inspectContent(file, bytes).map(x => ({ source, ...x })));
   };
   const paths = new Set(split(git('ls-files', '--cached', '--others', '--exclude-standard', '-z')));
