@@ -1,0 +1,109 @@
+name: Release browser extension
+
+on:
+  push:
+    tags: ['extension-v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing extension-vVERSION tag (manual runs create a draft)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: extension-release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    outputs:
+      tag: ${{ steps.identity.outputs.tag }}
+      version: ${{ steps.identity.outputs.version }}
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+      - name: Check release identity and isolate state
+        id: identity
+        run: |
+          [[ "$RELEASE_TAG" =~ ^extension-v[0-9]+(\.[0-9]+){0,3}$ ]]
+          test "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")" = "$(git rev-parse HEAD)"
+          git merge-base --is-ancestor HEAD origin/main
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${RELEASE_TAG#extension-v}" >> "$GITHUB_OUTPUT"
+          echo "INDEXED_HOME=$RUNNER_TEMP/indexed-release" >> "$GITHUB_ENV"
+      - name: Audit public source and history
+        run: node scripts/audit-public-source.mjs --history-ref HEAD
+      - name: Install test and archive tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ffmpeg poppler-utils zip unzip
+      - run: npm ci --registry=https://registry.npmjs.org
+      - run: npm run check
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - name: Package public extension files
+        run: |
+          npm run release:extension -- --tag "$RELEASE_TAG"
+          git diff --exit-code
+          cd dist/releases
+          sha256sum --check SHA256SUMS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: extension-release
+          path: |
+            dist/releases/indexed-extension-*.zip
+            dist/releases/SHA256SUMS
+            dist/releases/release-notes.txt
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ needs.build.outputs.tag }}
+      EXTENSION_VERSION: ${{ needs.build.outputs.version }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: extension-release
+          path: release
+      - name: Verify downloaded package
+        working-directory: release
+        run: |
+          sha256sum --check SHA256SUMS
+          unzip -tq "indexed-extension-$EXTENSION_VERSION.zip"
+      - name: Create release with complete assets
+        working-directory: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            "indexed-extension-$EXTENSION_VERSION.zip" SHA256SUMS \
+            --verify-tag --draft --prerelease --latest=false \
+            --title "Indexed browser extension $EXTENSION_VERSION (Preview)" \
+            --notes-file release-notes.txt
+      - name: Publish tag-triggered preview
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "$RELEASE_TAG" --draft=false --prerelease --latest=false

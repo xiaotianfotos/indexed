@@ -4,7 +4,7 @@
 
 Indexed 把主动添加的本机图片、视频、文档，以及在 YouTube / Bilibili 主动采集的视频片段，变成可搜索的多模态资料库。用自然语言找画面、片段和文字，结果保留文件位置、原始链接、时间码与文字摘录，方便人和 AI Agent 回到来源。
 
-当前为测试阶段的源码预览，主要面向本机使用；尚未提供签名、公证和自动升级的正式安装包。
+当前为测试阶段，主要面向本机使用。浏览器插件提供预发布 ZIP；完整应用尚未提供签名、公证和自动升级的正式安装包。
 
 ## 能做什么
 
@@ -73,7 +73,15 @@ A/B/C/D 共用一个模型包，均使用 Swift helper。Dashboard 的 A/C/D 入
 
 ## Chrome 扩展与 Agent
 
-构建后，在 Chrome 扩展管理页开启开发者模式，选择“加载已解压的扩展程序”，载入 `dist/extension/`。在扩展设置中连接本机 Indexed 服务，并在需要的视频上主动开启采集。
+从 [Releases](https://github.com/xiaotianfotos/indexed/releases) 下载 `indexed-extension-版本号.zip`，解压到一个固定目录。插件安装无需 Node.js 或自行编译：
+
+1. 打开 Chrome 扩展管理页 `chrome://extensions`，开启“开发者模式”。
+2. 点击“加载已解压的扩展程序”，选择解压后包含 `manifest.json` 的目录。
+3. 在扩展设置中连接本机 Indexed 服务，在需要的视频上主动开启采集。
+
+插件包不包含本机服务器、Apple 原生后端或模型；本机模式仍需按上方说明启动 Indexed。插件尚未上架 Chrome 商店，当前没有自动更新：将新版解压到原安装目录后，在扩展管理页点击重新加载。保留该目录及扩展的浏览器存储。
+
+如需从源码构建，执行 `npm ci` 和 `npm run build` 后加载 `dist/extension/`。发行附件中的 `SHA256SUMS` 用于校验 ZIP。
 
 CLI 示例：
 
@@ -107,6 +115,8 @@ npm run test:browser
 
 修改原生 helper 后另运行 `npm run test:native`。默认原生协议测试使用合成输入，并不代表真实模型跨设备验收。当前 GitHub CI 执行 Ubuntu / Node.js 24 应用和浏览器检查；正式发行与完整硬件支持矩阵仍待完善。
 
+维护者可运行 `npm run release:extension` 生成插件 ZIP 与校验文件。发布时，标签 `extension-v版本号` 必须匹配插件 manifest 的版本，并指向 `main` 已包含的提交。推送该标签会在检查通过后发布预发布版本；手动运行 Release 工作流并指定已有标签则创建草稿。流程不会覆盖已有 Release。
+
 服务仅供本机使用。项目不会自动采集无关浏览内容；本地模式的索引和素材留在本机，外部模型或云存储的数据流取决于你启用的配置。
 
 测试阶段不提供旧数据库迁移工具。遇到不兼容索引，请选择新的空存储目录并重新扫描；程序不会自动删除或改写旧目录。不同模型的 `embedding_space` 不能混用。
@@ -120,6 +130,8 @@ npm run test:browser
 Indexed is a local-first multimodal search application for explicitly added images, videos, documents, and user-selected YouTube / Bilibili video captures. Results retain source paths, URLs, timestamps, and text passages for both people and AI agents.
 
 This is an early source preview for local-machine use. Build with Node.js 20+ using `npm ci && npm run build`, then run `./bin/indexed serve --open`. Configure an embedding backend before scanning. Local vector storage uses zvec; external embedding services receive the content you choose to process.
+
+The browser extension is also available as a preview ZIP on [Releases](https://github.com/xiaotianfotos/indexed/releases). Extract it, enable Developer mode at `chrome://extensions`, and load the directory containing `manifest.json`. No build tools are needed to install the ZIP. The local server and Apple models are separate; extension updates currently require replacing the extracted files and reloading the extension.
 
 The Apple Silicon backend uses Swift, Core ML, and MLX without a Python product dependency. B is the default; A is a GPU baseline and C/D are explicit private-ANE experiments. Real-model validation currently covers base M4 on macOS 26. The dedicated approximately 2.50 GiB WeMM model package is available separately on [ModelScope](https://modelscope.cn/models/xiaotianfotos/WeMM-Embedding-2B-Apple-Q8-G64). Preserve its directory layout, download actual LFS weights, and export files without Git metadata before verification. Signed releases, automatic model downloads, and broader hardware validation are not yet available.
 

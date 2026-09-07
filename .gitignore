@@ -38,6 +38,7 @@ secrets.json
 /.github/workflows/*
 !/.github/workflows/ci.yml
 !/.github/workflows/pr-review.yml
+!/.github/workflows/release-extension.yml
 /.github/dependabot.yml
 
 # Historical Python, conversion and reference tools are kept locally only.

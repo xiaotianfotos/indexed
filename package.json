@@ -24,7 +24,8 @@
     "test:native": "tsc --noEmit -p native/apple-embedding/tests/tsconfig.json && node --import tsx --test native/apple-embedding/tests/*.test.ts",
     "audit:public": "node scripts/audit-public-source.mjs",
     "test:public-tools": "node --test scripts/tests/*.test.mjs",
-    "model:package": "node scripts/prepare-apple-model-package.mjs"
+    "model:package": "node scripts/prepare-apple-model-package.mjs",
+    "release:extension": "node scripts/package-extension.mjs"
   },
   "engines": {
     "node": ">=20"
