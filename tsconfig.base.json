@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "useUnknownInCatchVariables": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "types": ["node", "chrome"],
+    "baseUrl": ".",
+    "paths": {
+      "@indexed/contracts": ["packages/contracts/src/index.ts"],
+      "@indexed/apple-embedding-backend": ["packages/apple-embedding-backend/src/index.ts"],
+      "@indexed/core": ["packages/core/src/index.ts"],
+      "@indexed/core/library": ["packages/core/src/library.ts"],
+      "@indexed/config": ["packages/config/src/index.ts"],
+      "@indexed/clients/direct-cloud": ["packages/clients/src/direct-cloud.ts"],
+      "@indexed/clients/rerank": ["packages/clients/src/rerank.ts"],
+      "@indexed/server": ["apps/server/src/index.ts"]
+    }
+  }
+}

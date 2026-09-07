@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "activeProfile": "default",
+  "server": {
+    "host": "127.0.0.1",
+    "port": 18767
+  },
+  "profiles": {
+    "default": {
+      "label": "Default",
+      "spaceId": "",
+      "embedding": {
+        "baseUrl": "",
+        "model": "",
+        "dimension": 4096,
+        "inputStyle": "auto"
+      },
+      "reranker": {
+        "enabled": false,
+        "baseUrl": "",
+        "model": "",
+        "candidates": 20
+      },
+      "storage": {
+        "provider": "oss-vectors",
+        "region": "cn-hangzhou",
+        "accountId": "",
+        "bucket": "",
+        "visualIndex": "",
+        "transcriptIndex": "",
+        "accessKeyId": "",
+        "accessKeySecret": "",
+        "securityToken": ""
+      }
+    }
+  }
+}

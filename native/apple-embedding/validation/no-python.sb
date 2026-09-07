@@ -1,0 +1,5 @@
+(version 1)
+(allow default)
+; Applied to the whole validation process tree, including absolute paths and
+; virtual-environment interpreters. Product code must not spawn Python or pip.
+(deny process-exec (regex #"(^|/)([Pp]ython[0-9.]*|[Pp]ip[0-9.]*)$"))

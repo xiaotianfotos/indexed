@@ -1,0 +1,10 @@
+# Public Core ML + MLX runtime. Source revisions are pinned because WeMM uses
+# newly-added Qwen3.5 language and multimodal MRoPE support.
+mlx==0.32.2
+mlx-lm @ git+https://github.com/ml-explore/mlx-lm.git@77c33b14373ac70d7abd6f82af15962852adadbb
+mlx-vlm @ git+https://github.com/Blaizzy/mlx-vlm.git@ee8806e09a564a342d9ac35e0867d75e84ff5f4f
+transformers==5.16.1
+tokenizers==0.23.1
+coremltools==9.0
+pillow>=11,<13
+numpy>=2,<3

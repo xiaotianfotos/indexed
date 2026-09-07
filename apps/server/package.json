@@ -1,0 +1,15 @@
+{
+  "name": "@indexed/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local TypeScript HTTP control plane.",
+  "dependencies": {
+    "@indexed/apple-embedding-backend": "0.1.0",
+    "@indexed/config": "0.1.0",
+    "@indexed/contracts": "0.1.0",
+    "@indexed/core": "0.1.0"
+  },
+  "exports": "./src/index.ts",
+  "license": "Apache-2.0"
+}

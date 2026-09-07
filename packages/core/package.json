@@ -1,0 +1,17 @@
+{
+  "name": "@indexed/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@indexed/clients": "0.1.0",
+    "@indexed/config": "0.1.0",
+    "@indexed/contracts": "0.1.0",
+    "word-extractor": "^1.0.4"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./library": "./src/library.ts"
+  },
+  "license": "Apache-2.0"
+}

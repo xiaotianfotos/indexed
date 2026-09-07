@@ -1,0 +1,21 @@
+{
+  "name": "@indexed/clients",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Isomorphic Embedding, reranker, and OSS Vectors clients.",
+  "dependencies": {
+    "@indexed/contracts": "0.1.0",
+    "@zvec/zvec": "0.7.0"
+  },
+  "exports": {
+    "./control-plane-url": "./src/control-plane-url.ts",
+    "./direct-cloud": "./src/direct-cloud.ts",
+    "./local-vectors": "./src/local-vectors.ts",
+    "./rerank": "./src/rerank.ts",
+    "./webm-duration": "./src/webm-duration.ts",
+    "./operation": "./src/operation.ts",
+    "./embedding-transport": "./src/embedding-transport.ts"
+  },
+  "license": "Apache-2.0"
+}

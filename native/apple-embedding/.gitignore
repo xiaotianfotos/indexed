@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+swift/.build/
+/models/
+*.safetensors
+*.mlmodelc/
+*.mlpackage/
+results/compute-plan-tmp/
+results/coreml-cache-*/
+results/indexed-ane-component/zvec/
+results/tmp/
+
+# Benchmark inputs, machine-generated artifacts and JSON reports stay local.
+# The root ignore policy excludes the entire results directory from publication.
+results/indexed-ane-component/
+results/*.npz
+results/*.mp4
+results/inspect-coreml-compute-plan

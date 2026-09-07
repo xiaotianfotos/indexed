@@ -1,0 +1,9 @@
+Indexed
+
+Indexed project source is distributed under the Apache License, Version 2.0.
+
+Third-party source and dependencies retain their own copyright and license
+notices. In particular, native embedding attribution and model distribution
+boundaries are documented in native/apple-embedding/THIRD_PARTY_NOTICES.md.
+Model weights and downloaded native artifacts are not relicensed by the
+Indexed project license.

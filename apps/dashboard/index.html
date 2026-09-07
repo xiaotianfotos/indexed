@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Indexed</title>
+    <meta name="description" content="用自然语言检索本机素材目录。" />
+    <link rel="icon" href="/indexed.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <main>
+        <header>
+          <a class="brand" id="brand-home" href="/" aria-label="返回检索"><img class="brand-mark" src="/indexed.svg" alt="" />Indexed</a>
+          <div class="page-heading"><h1 id="page-title">检索</h1><p id="page-subtitle">描述你想要的画面，Indexed 在本机素材目录里找</p></div>
+          <div class="top-actions">
+            <button id="connection-pill" class="status-pill" type="button"><i></i><span>检查连接</span></button>
+            <button id="view-toggle" class="view-toggle" type="button" aria-pressed="false"><span aria-hidden="true">⚙</span><b>设置</b></button>
+          </div>
+        </header>
+
+        <section class="view active" id="view-search">
+          <div class="search-stage" id="search-stage">
+            <div class="search-lead">
+              <h2>想找什么画面？</h2>
+              <p>描述画面，或输入文档中的内容。</p>
+            </div>
+
+            <section class="setup-guide" id="setup-guide" aria-labelledby="setup-title" aria-live="polite">
+              <h3 id="setup-title">正在检查模型与索引</h3>
+              <p id="setup-detail">本机配置、模型和素材状态将显示在这里。</p>
+              <button class="primary" id="setup-action" type="button">重新检查</button>
+            </section>
+            <form class="search-bar" id="asset-search-form">
+              <input id="asset-search-query" aria-label="检索素材" aria-describedby="asset-search-status" autocomplete="off" placeholder="例如：雨夜霓虹街道的手持跟拍镜头" disabled />
+              <button class="primary" type="submit" disabled>搜索</button>
+            </form>
+
+            <div class="kind-chips" id="asset-kind-chips">
+              <button class="chip active" data-kind="" type="button">全部</button>
+              <button class="chip" data-kind="video" type="button">视频</button>
+              <button class="chip" data-kind="image" type="button">图片</button>
+              <button class="chip" data-kind="document" type="button">文档</button>
+            </div>
+
+            <p class="search-status" id="asset-search-status" role="status" aria-live="polite"></p>
+            <div class="asset-grid" id="asset-results"></div>
+            <p class="library-foot" id="library-foot"></p>
+          </div>
+        </section>
+
+        <section class="view" id="view-settings">
+          <div class="settings-tabs" role="tablist" aria-label="设置分类">
+            <button class="active" data-settings-tab="assets" role="tab" aria-selected="true" type="button">素材与扫描</button>
+            <button data-settings-tab="test" role="tab" aria-selected="false" type="button" hidden>入库测试</button>
+            <button data-settings-tab="engine" role="tab" aria-selected="false" type="button">模型与数据库</button>
+          </div>
+          <details class="config-advanced developer-settings"><summary>开发者工具</summary><label><input type="checkbox" id="developer-tools" /> 显示入库性能测试</label></details>
+
+          <div class="settings-page active" data-settings-page="assets" role="tabpanel">
+            <section class="panel">
+              <header class="panel-head">
+                <div><h2>素材目录</h2></div>
+                <button class="primary" id="pick-directory" type="button">添加目录</button>
+              </header>
+              <div class="scan-engine"><span id="scan-engine-label">读取计算配置…</span><button class="link" id="scan-engine-settings" type="button">切换模式</button></div>
+              <div class="directory-list" id="directory-list"></div>
+              <p class="panel-note" id="directory-note"></p>
+            </section>
+
+            <section class="panel">
+              <header class="panel-head">
+                <div><h2>扫描与入库</h2><p id="scan-summary">读取中</p></div>
+                <div class="panel-actions"><button class="quiet" id="background-scan-all" type="button">后台扫描</button><button class="secondary" id="scan-all" type="button">满速扫描</button></div>
+              </header>
+              <div class="setting-row">
+                <label class="switch"><input type="checkbox" id="auto-scan" aria-label="自动扫描" /><span class="slider"></span></label>
+                <div class="setting-copy"><strong>自动扫描</strong><span>仅处理新增或变更的素材</span></div>
+                <button class="secondary" id="save-scan" type="button">保存</button>
+              </div>
+              <details class="scan-options config-advanced">
+                <summary>扫描设置</summary>
+                <div class="setting-inline">
+                  <label>间隔<input type="number" id="scan-interval" min="1" max="1440" step="1" />分钟</label>
+                  <label>每轮上限<input type="number" id="scan-limit" min="1" max="5000" step="1" />个</label>
+                  <label>盘点上限<input type="number" id="scan-discovery-limit" min="1000" max="1000000" step="1000" />个</label>
+                </div>
+              </details>
+              <details class="ingest-estimate" id="ingest-estimate">
+                <summary>入库预估</summary>
+                <div><span id="ingest-estimate-source">读取历史样本</span></div>
+                <p id="ingest-estimate-summary">读取中</p>
+                <p class="ingest-rates" id="ingest-estimate-rates"></p>
+              </details>
+            </section>
+          </div>
+
+          <div class="settings-page" data-settings-page="test" role="tabpanel" hidden>
+            <section class="panel ingest-test-panel">
+              <header class="panel-head"><div><h2>入库测试</h2><p>同一批素材，依次对比四种计算模式。不写入数据库。</p></div><span class="test-tag">A → B → C → D</span></header>
+              <div class="test-directory"><input id="test-directory" aria-label="测试素材目录" placeholder="选择包含图片、视频或文档的目录" /><button class="secondary" id="test-pick-directory" type="button">选择目录</button></div>
+              <div class="test-controls"><label>素材上限 <input id="test-limit" type="number" min="1" max="50" value="10" /> 个</label><label>每种模式 <select id="test-repeats"><option value="1">测试 1 轮</option><option value="3">测试 3 轮，取中位数</option></select></label><button class="primary" id="test-start" type="button">开始测试</button><button class="secondary danger" id="test-stop" type="button" hidden>停止测试</button></div>
+              <div id="test-progress" class="test-progress" aria-live="polite"></div>
+              <div id="test-results" class="test-results"></div>
+              <p class="panel-note">不跑预热轮，轮间等待 5 秒，不计入成绩。整批耗时含读取、抽帧和首次计算开销，不含加载及写库。CPU 仍负责读取与调度；ANE 分工不等于占用比例。</p>
+            </section>
+          </div>
+
+          <div class="settings-page" data-settings-page="engine" role="tabpanel" hidden>
+            <section class="panel" id="profile-panel">
+              <header class="panel-head profile-head">
+                <div><h2>模型与数据库</h2></div>
+                <div class="active-profile">
+                  <span>当前启用</span>
+                  <strong id="active-profile-label">读取中</strong>
+                  <small id="active-profile-summary"></small>
+                </div>
+              </header>
+
+              <div class="profile-picker">
+                <label><span>编辑档案</span><select id="profile-select" aria-label="编辑档案"></select></label>
+                <button class="secondary" id="profile-new" type="button">新建档案</button>
+                <button class="quiet danger" id="profile-delete" type="button">删除</button>
+              </div>
+
+              <div class="config-grid basic-config">
+                <label class="config-field"><span>档案名称</span><input id="profile-label" autocomplete="off" /></label>
+                <label class="config-field"><span>向量后端</span><select id="embedding-provider"><option value="remote">外部 Embedding 服务</option><option value="apple-native">Apple 原生 WeMM</option></select></label>
+                <label class="config-field"><span>模型</span><input id="embedding-model" placeholder="wemm-embedding-9b" autocomplete="off" /></label>
+                <label class="config-field" id="apple-execution-mode-field" hidden><span>计算模式</span><select id="apple-execution-mode"><option value="" disabled>请选择计算模式</option><option value="a">纯 GPU（性能基线）</option><option value="b">ANE 视觉 + GPU 语言（稳定）</option><option value="c">ANE 视觉＋部分语言计算</option><option value="d">ANE 视觉＋更多语言计算（研究）</option></select></label>
+                <label class="config-field" id="apple-experiments-field" hidden><span>实验选项</span><span><input type="checkbox" id="apple-experiments" /> 显示 A/C/D 实验模式</span></label>
+                <div class="config-field mode-apply" id="apple-execution-apply-field" hidden><button class="secondary" id="apply-execution-mode" type="button">应用计算模式</button></div>
+                <label class="config-field wide" id="embedding-base-url-field"><span>Embedding 服务地址</span><input id="embedding-base-url" type="url" placeholder="http://127.0.0.1:5007" autocomplete="off" /></label>
+                <label class="config-field wide"><span>数据库目录</span><input id="local-storage-path" placeholder="留空使用默认位置" autocomplete="off" spellcheck="false" /></label>
+              </div>
+              <p class="resolved-path" id="apple-execution-mode-note" hidden></p>
+              <p class="resolved-path mode-load-status" id="apple-execution-load-status" hidden></p>
+              <details class="config-advanced storage-details"><summary>存储位置</summary><p class="resolved-path"><code id="resolved-storage-path"></code></p><p class="resolved-path">更换目录不会搬迁已有数据。</p></details>
+
+              <details class="config-advanced" id="apple-native-config" hidden>
+                <summary>模型文件与实验参数</summary>
+                <div class="config-grid">
+                  <label class="config-field wide"><span>WeMM 模型包</span><input id="apple-model-package" placeholder="留空使用 INDEXED_HOME/models/WeMM-Embedding-2B-Apple-Q8-G64" autocomplete="off" spellcheck="false" /></label>
+                  <label class="config-field wide"><span>原生 helper</span><input id="apple-native-binary" placeholder="留空自动查找 INDEXED_HOME/runtime/apple-embedding" autocomplete="off" spellcheck="false" /></label>
+                  <label class="config-field wide"><span>Core ML 缓存</span><input id="apple-coreml-cache" placeholder="留空使用 INDEXED_HOME/cache/coreml" autocomplete="off" spellcheck="false" /></label>
+                  <label class="config-field wide" id="apple-recurrence-profile-field" hidden><span>GDN 质量档案（留空使用内置验证配置）</span><input id="apple-recurrence-profile" autocomplete="off" spellcheck="false" /></label>
+                  <div class="config-grid wide" id="apple-private-kernel-fields" hidden>
+                    <label class="config-field"><span>ANE 固定块长度</span><select id="apple-private-sequence-length"><option value="256">256 token</option><option value="512">512 token</option><option value="1024">1024 token</option><option value="2112">2112 token</option></select></label>
+                    <label class="config-field"><span>MLP 分流比例</span><input id="apple-private-mlp-fraction" type="number" min="0.05" max="0.9" step="0.05" /></label>
+                    <label class="config-field"><span>MLP 接管层数</span><input id="apple-private-mlp-max-layers" type="number" min="1" max="24" step="1" /></label>
+                    <label class="config-field"><span>MLP 内核变体</span><input id="apple-private-mlp-variant" type="number" min="1" max="64" step="1" /></label>
+                    <label class="config-field" id="apple-private-recurrence-max-field"><span>GDN 最大输入长度</span><select id="apple-private-recurrence-max-tokens"><option value="256">256 token</option><option value="512">512 token</option><option value="1024">1024 token</option><option value="2112">2112 token</option><option value="4096">4096 token</option><option value="8192">8192 token</option></select></label>
+                    <label class="config-field" id="apple-private-recurrence-block-field"><span>GDN 解算块</span><select id="apple-private-recurrence-block-size"><option value="2">2</option><option value="4">4</option><option value="8">8</option></select></label>
+                    <p class="resolved-path wide">C/D 均使用 Swift。当前支持 MLP 内核 8、Q8 下投影；D 使用 2112 token、75%、24 层、block8、slot0、FP16 的验证配置。</p>
+                  </div>
+                </div>
+              </details>
+
+              <details class="config-advanced" id="embedding-advanced">
+                <summary>高级参数</summary>
+                <div class="config-grid">
+                  <label class="config-field"><span>向量维度</span><input id="embedding-dimension" type="number" min="1" step="1" /></label>
+                  <label class="config-field"><span>输入格式</span><select id="embedding-input-style"><option value="auto">自动识别</option><option value="wemm">WeMM</option><option value="qwen">Qwen</option></select></label>
+                  <label class="config-field wide"><span>向量空间</span><input id="embedding-space" placeholder="模型或供应商变化时应使用新的向量空间" autocomplete="off" spellcheck="false" /></label>
+                </div>
+              </details>
+
+              <footer class="config-actions">
+                <div><span id="profile-note"></span><small id="profile-test-status"></small></div>
+                <button class="secondary" id="test-profile" type="button">测试连接</button>
+                <button class="primary" id="save-profile" type="button">保存更改</button>
+              </footer>
+
+              <details class="config-diagnostics">
+                <summary>诊断信息</summary>
+                <dl>
+                  <div><dt>配置文件</dt><dd><code id="config-path">config.json</code></dd></div>
+                  <div><dt>性能历史</dt><dd><code id="performance-history-path"></code></dd></div>
+                  <div><dt>档案 ID</dt><dd><code id="profile-id"></code></dd></div>
+                </dl>
+              </details>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="picker" id="picker" role="dialog" aria-modal="true" aria-label="选择素材目录" tabindex="-1" hidden>
+      <div class="picker-backdrop" id="picker-backdrop"></div>
+      <div class="picker-panel">
+        <header class="picker-head">
+          <div><strong>选择素材目录</strong></div>
+          <button class="quiet" id="picker-close" type="button">关闭</button>
+        </header>
+        <div class="picker-path">
+          <button class="quiet" id="picker-up" type="button" title="返回上级">↑</button>
+          <input id="picker-input" aria-label="目录路径" autocomplete="off" spellcheck="false" />
+          <button class="secondary" id="picker-go" type="button">前往</button>
+        </div>
+        <div class="picker-kinds">
+          <div class="picker-kinds-head"><strong>追踪文件类型</strong></div>
+          <div class="picker-kind-chips" id="picker-kind-chips">
+            <button class="kind-option" data-kind="video" type="button" aria-pressed="true"><b>视频</b><small>MP4 · MOV · MKV</small></button>
+            <button class="kind-option" data-kind="image" type="button" aria-pressed="true"><b>图片</b><small>JPG · PNG · HEIC</small></button>
+            <button class="kind-option" data-kind="document" type="button" aria-pressed="true"><b>文档与文本</b><small>PDF · Word · MD · TXT</small></button>
+          </div>
+          <details class="format-details"><summary>支持的文档格式</summary><div class="document-formats" id="document-formats"></div></details>
+        </div>
+        <ul class="picker-list" id="picker-list"></ul>
+        <footer class="picker-foot">
+          <span id="picker-note"></span>
+          <button class="primary" id="picker-choose" type="button">添加并扫描</button>
+        </footer>
+      </div>
+    </div>
+
+    <div class="modal" id="asset-modal" role="dialog" aria-modal="true" aria-labelledby="asset-modal-title" tabindex="-1" hidden>
+      <div class="modal-backdrop" id="asset-modal-backdrop"></div>
+      <div class="modal-panel">
+        <div class="modal-head">
+          <strong id="asset-modal-title"></strong>
+          <button class="quiet" id="asset-modal-close" type="button">关闭</button>
+        </div>
+        <div class="modal-media" id="asset-modal-media"></div>
+        <div class="modal-meta" id="asset-modal-meta"></div>
+        <div class="modal-actions">
+          <span id="asset-copy-status"></span>
+          <span id="asset-save-status"></span>
+          <button class="secondary" id="asset-copy-path" type="button">复制路径</button>
+          <button class="primary" id="asset-save" type="button" hidden>保存</button>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

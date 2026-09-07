@@ -1,0 +1,10 @@
+{
+  "name": "@indexed/apple-embedding-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Managed lifecycle for the native Apple WeMM embedding helper.",
+  "exports": "./src/index.ts",
+  "dependencies": { "@indexed/contracts": "0.1.0" },
+  "license": "Apache-2.0"
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@indexed/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Structured command interface for people and AI agents.",
+  "dependencies": {
+    "@indexed/apple-embedding-backend": "0.1.0",
+    "@indexed/config": "0.1.0",
+    "@indexed/core": "0.1.0",
+    "@indexed/server": "0.1.0"
+  },
+  "license": "Apache-2.0"
+}

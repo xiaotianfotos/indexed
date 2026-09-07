@@ -1,0 +1,11 @@
+{
+  "name": "@indexed/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@indexed/contracts": "0.1.0"
+  },
+  "exports": "./src/index.ts",
+  "license": "Apache-2.0"
+}

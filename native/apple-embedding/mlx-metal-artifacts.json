@@ -1,0 +1,30 @@
+{
+  "version": "0.31.1",
+  "source": "https://pypi.org/pypi/mlx-metal/0.31.1/json",
+  "member": "mlx/lib/mlx.metallib",
+  "licenseMember": "mlx_metal-0.31.1.dist-info/licenses/LICENSE",
+  "licenseSha256": "ccfab7ccb2ea306f71531c8ca77bb55507606cd90768b1e32b8b52ab5b48cf01",
+  "artifacts": [
+    {
+      "minimumMacOS": 14,
+      "url": "https://files.pythonhosted.org/packages/39/66/2313497fdbc7fbadf8e026c09366e3f049f9114e65ca4edc23cdb8699186/mlx_metal-0.31.1-py3-none-macosx_14_0_arm64.whl",
+      "size": 38624074,
+      "archiveSha256": "70741174131dbf7fdd479cb730e06e08c358eac3bf7905d9e884e7960cfdd5b8",
+      "metallibSha256": "58851101cd4afc56d3080255fe4db366cbd87d654ce5e0651436e4970cd209d1"
+    },
+    {
+      "minimumMacOS": 15,
+      "url": "https://files.pythonhosted.org/packages/c7/34/4c3c6890ce6095b2ab2ba2f5f15c9a7ba17208d47f8cacb572885a2dc0eb/mlx_metal-0.31.1-py3-none-macosx_15_0_arm64.whl",
+      "size": 38618950,
+      "archiveSha256": "6c56bd8cd27743e635f5a90a22535af7c31bd22b4b126d46b6da2da52d72e413",
+      "metallibSha256": "928bdaf4d28683442b31bf11760f4dec600fe705e2a6367aaa3de0c5801d2066"
+    },
+    {
+      "minimumMacOS": 26,
+      "url": "https://files.pythonhosted.org/packages/51/bc/987cb99e3aafb296aa11ce5133838a10eae8447edd53168d0804d4fb3a14/mlx_metal-0.31.1-py3-none-macosx_26_0_arm64.whl",
+      "size": 49256543,
+      "archiveSha256": "e7324b7c56b519ae67c025d3ced07e5d35bc3a9f19d4c45fe4927f385148c59e",
+      "metallibSha256": "198488eb61359e953580a9c4530400feee1a06dd2f28a930a6ffa58aec66a597"
+    }
+  ]
+}

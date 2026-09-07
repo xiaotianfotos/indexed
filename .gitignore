@@ -1,0 +1,38 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+coverage/
+test-results/
+playwright-report/
+.data/
+
+# Runtime configuration and credentials never belong in the repository.
+config.local.json
+secrets.json
+.indexed-extension-key
+
+# Project documentation and benchmark reports stay local, including root
+# README/AGENTS and Markdown templates. Keep legal notices and the Skill entry
+# point: those are required distribution metadata or functional interfaces.
+/docs/
+*.md
+*.markdown
+*.mdx
+*.rst
+*.adoc
+!LICENSE*
+!LICENCE*
+!COPYING*
+!NOTICE*
+!THIRD_PARTY_NOTICES.md
+!ACKNOWLEDGMENTS.md
+!/skills/**/SKILL.md
+/native/apple-embedding/results/
+
+# CI and dependency automation are deferred; retain their drafts locally.
+/.github/workflows/
+/.github/dependabot.yml

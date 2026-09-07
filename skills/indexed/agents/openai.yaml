@@ -1,0 +1,4 @@
+interface:
+  display_name: "Indexed"
+  short_description: "Search and manage multimodal video memory"
+  default_prompt: "Use $indexed to find a previously indexed video moment."

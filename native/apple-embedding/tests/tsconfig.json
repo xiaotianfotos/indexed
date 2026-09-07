@@ -1,0 +1,13 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "*.ts",
+    "../validation/*.ts",
+    "../../../packages/core/src/word-extractor.d.ts"
+  ]
+}

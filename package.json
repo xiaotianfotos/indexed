@@ -1,0 +1,38 @@
+{
+  "name": "indexed",
+  "version": "0.1.0",
+  "private": true,
+  "bin": {
+    "indexed": "bin/indexed"
+  },
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "npm run typecheck && npm run build && npm test && npm run test:build-tools && npm run validate:build && npm run audit:runtime && npm run audit:hardcoding",
+    "dev": "node scripts/build.mjs && node --import tsx apps/cli/src/index.ts serve",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "test:browser": "npm run build && playwright test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "validate:build": "node scripts/validate-build.mjs",
+    "audit:runtime": "node scripts/audit-runtime-dependencies.mjs",
+    "audit:hardcoding": "node scripts/audit-hardcoding.mjs",
+    "test:build-tools": "node --test native/apple-embedding/tests/*.test.mjs",
+    "test:native": "tsc --noEmit -p native/apple-embedding/tests/tsconfig.json && node --import tsx --test native/apple-embedding/tests/*.test.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/chrome": "^0.1.6",
+    "@types/node": "^24.3.0",
+    "esbuild": "^0.25.9",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  },
+  "license": "Apache-2.0"
+}

@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "activeProfile": "default",
+  "server": {
+    "host": "127.0.0.1",
+    "port": 18767
+  },
+  "profiles": {
+    "default": {
+      "label": "Default",
+      "spaceId": "",
+      "embedding": {
+        "baseUrl": "",
+        "model": "",
+        "dimension": 4096,
+        "inputStyle": "auto",
+        "provider": "remote"
+      },
+      "reranker": {
+        "enabled": false,
+        "baseUrl": "",
+        "model": "",
+        "candidates": 20
+      },
+      "storage": {
+        "provider": "local",
+        "path": "",
+        "visualIndex": "web-visual",
+        "transcriptIndex": "web-transcript",
+        "assetIndex": "library-assets"
+      }
+    }
+  }
+}
