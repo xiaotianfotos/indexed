@@ -5,13 +5,13 @@ import {
   normalizeControlPlaneUrl,
 } from "@indexed/clients/control-plane-url";
 
-test("normalizes a bare LAN address to the Indexed default port", () => {
-  assert.equal(normalizeControlPlaneUrl("192.168.100.10"), "http://192.168.100.10:18767");
+test("normalizes a bare IPv4 address to the Indexed default port", () => {
+  assert.equal(normalizeControlPlaneUrl("192.0.2.20"), "http://192.0.2.20:18767");
   assert.equal(normalizeControlPlaneUrl(" indexed.local "), "http://indexed.local:18767");
 });
 
 test("preserves explicit schemes and ports while removing paths", () => {
-  assert.equal(normalizeControlPlaneUrl("http://192.168.100.10:19000/"), "http://192.168.100.10:19000");
+  assert.equal(normalizeControlPlaneUrl("http://192.0.2.20:19000/"), "http://192.0.2.20:19000");
   assert.equal(normalizeControlPlaneUrl("https://indexed.example:443/settings"), "https://indexed.example");
 });
 
@@ -22,6 +22,6 @@ test("rejects unsafe schemes and incomplete numeric addresses", () => {
 });
 
 test("creates Chrome host permission patterns without ports", () => {
-  assert.equal(httpHostPermissionPattern("http://192.168.100.10:18767"), "http://192.168.100.10/*");
+  assert.equal(httpHostPermissionPattern("http://192.0.2.20:18767"), "http://192.0.2.20/*");
   assert.equal(httpHostPermissionPattern("https://indexed.example:8443"), "https://indexed.example/*");
 });

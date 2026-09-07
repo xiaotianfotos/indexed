@@ -36,3 +36,20 @@ test('staged and published-history secrets cannot be hidden by editing or deleti
   fs.writeFileSync(path.join(root, 'docs', 'local.md'), token);
   assert(!auditRepository(root).findings.some(x => x.file.startsWith('docs/')));
 });
+
+test('literal credential checks include prefixed constants and compound cloud key fields', () => {
+  for (const field of ['SERVICE_API_KEY', 'accessKeySecret', 'aws_secret_access_key', 'securityToken']) {
+    const value = 'Q'.repeat(24);
+    const findings = inspectContent('src/config.ts', Buffer.from(`const ${field} = "${value}";`));
+    assert(findings.some(x => x.rule === 'literal credential; review required'), field);
+    assert(!JSON.stringify(findings).includes(value));
+  }
+});
+
+test('only the two exact credential-redaction test sentinels are exempted', () => {
+  const file = 'tests/ingest-performance.test.ts';
+  const sentinel = ['secret', 'must', 'not', 'be', 'recorded'].join('-');
+  assert.deepEqual(inspectContent(file, Buffer.from(`accessKeySecret: "${sentinel}"`)), []);
+  const value = 'R'.repeat(24);
+  assert(inspectContent(file, Buffer.from(`accessKeySecret: "${value}"`)).length > 0);
+});

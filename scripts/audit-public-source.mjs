@@ -4,6 +4,8 @@ import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
 const legal = /^(?:LICENSE|LICENCE|COPYING|NOTICE)(?:[.-].*)?$|^(?:THIRD_PARTY_NOTICES|ACKNOWLEDGMENTS)\.md$/i;
+// Exact synthetic sentinels used to assert that credentials never enter ingest history.
+const fixtureCredentials = new Map([['tests/ingest-performance.test.ts', new Set(['must-not-be-recorded', 'secret-must-not-be-recorded'])]]);
 const rules = [
   ['private key', /-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED )?PRIVATE KEY-----/g],
   ['cloud access key', /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b|\bLTAI[A-Za-z0-9]{16,}\b/g],
@@ -38,8 +40,8 @@ export function inspectContent(file, bytes) {
     const lines = text.split('\n');
     lines.forEach((line, i) => {
       // Only literal, quoted assignments; identifiers and template references are not credentials.
-      const credential = /\b(?:api[_-]?key|access[_-]?key|secret|password|access[_-]?token|auth[_-]?token)\b["']?\s*[:=]\s*["']([^"'\s]{16,})["']/i.exec(line);
-      if (credential && !/^(?:example|placeholder|your|dummy|fake|test|redacted|\$|<)/i.test(credential[1])) findings.push({ file, line: i + 1, rule: 'literal credential; review required' });
+      const credential = /\b(?:[a-z0-9_]*(?:api[_-]?key|access[_-]?key(?:[_-]?(?:id|secret))?|secret(?:[_-]?access)?[_-]?key|secret|password|security[_-]?token|access[_-]?token|auth[_-]?token)[a-z0-9_]*)\b["']?\s*[:=]\s*["']([^"'\s]{16,})["']/i.exec(line);
+      if (credential && !fixtureCredentials.get(file)?.has(credential[1]) && !/^(?:example|placeholder|your|dummy|fake|test|redacted|\$|<)/i.test(credential[1])) findings.push({ file, line: i + 1, rule: 'literal credential; review required' });
       if (/\/(?:Users|Volumes)\/[A-Za-z0-9_.-]+\//.test(line) && !(file === 'tests/local-vectors.test.ts' && line.includes(['', 'Volumes', 'example', ''].join('/')))) findings.push({ file, line: i + 1, rule: 'personal filesystem path' });
     });
   }

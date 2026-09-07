@@ -30,7 +30,7 @@ export function normalizeControlPlaneUrl(
   if (/^\d+(?:\.\d+)+$/.test(suppliedHost)) {
     const octets = suppliedHost.split(".");
     if (octets.length !== 4 || octets.some((part) => Number(part) > 255)) {
-      throw new Error("请输入完整 IP 地址，例如 10.0.0.20");
+      throw new Error("请输入完整 IP 地址，例如 127.0.0.1");
     }
   }
 

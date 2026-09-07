@@ -57,7 +57,7 @@ enum CoreMLCompilationCache {
             create: true
         )
         return root
-            .appendingPathComponent("com.xiaotian.indexed", isDirectory: true)
+            .appendingPathComponent("org.indexed.app", isDirectory: true)
             .appendingPathComponent("AppleEmbedding", isDirectory: true)
             .appendingPathComponent("CoreML", isDirectory: true)
     }

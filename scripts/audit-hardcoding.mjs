@@ -3,11 +3,10 @@ import path from "node:path";
 
 const roots = ["apps", "packages", "skills", "scripts"];
 const blocked = [
+  { name: "personal bundle namespace", pattern: /\bcom\.(?!indexed\b)[a-z0-9_-]+\.indexed\b/i },
   { name: "private LAN address", pattern: /192\.168\.\d+\.\d+/ },
   { name: "absolute user path", pattern: /\/(?:Users|Volumes)\/[A-Za-z0-9_.-]+\// },
   { name: "Alibaba AccessKey", pattern: /LTAI[A-Za-z0-9]{12,}/ },
-  { name: "historical personal Index", pattern: /youtubevisual4096/ },
-  { name: "personal product identifier", pattern: /xiaotian-video-memory/i },
 ];
 
 function files(directory) {

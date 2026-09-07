@@ -55,7 +55,7 @@ const bundledText = [
 ].map((file) => fs.readFileSync(file, "utf8")).join("\n");
 
 if (/@indexed\//.test(bundledText)) throw new Error("Bundled output still contains unresolved workspace imports");
-if (/youtubevisual4096|192\.168\.\d+\.\d+|\/(?:Users|Volumes)\//.test(bundledText)) {
+if (/192\.168\.\d+\.\d+|\/(?:Users|Volumes)\//.test(bundledText)) {
   throw new Error("Bundled output contains a blocked hard-coded environment value");
 }
 
