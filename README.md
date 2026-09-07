@@ -46,7 +46,7 @@ zsh native/apple-embedding/build_native_service.sh
 
 模型与源码分开分发。使用 Indexed 专用的 **WeMM-Embedding-2B-Apple-Q8-G64** 模型包，约 2.50 GiB，包含 MLX Q8/G64 语言权重、Core ML 视觉编码器、tokenizer、模板及校验清单。这是基于 Tencent WeMM-Embedding-2B 的混合格式包，不能直接当作通用 mlx-lm 或 Transformers 模型使用。
 
-模型托管上传正在准备中，下载链接尚未公布；应用目前支持配置已有本地模型包，尚未实现自动下载。取得完整模型目录后，将下面的 `/path/to/model-package` 替换成其绝对路径：
+模型已托管在 [魔搭 / ModelScope](https://modelscope.cn/models/xiaotianfotos/WeMM-Embedding-2B-Apple-Q8-G64)。下载完整文件并保留 `language/` 和 `vision/` 层级；校验清单也覆盖魔搭仓库的 `.gitattributes` 与 `configuration.json`。如通过 Git 获取，需取得实际 LFS 权重，并将文件导出到不含 `.git/` 的模型目录再校验。应用尚未实现自动下载。将下面的 `/path/to/model-package` 替换成该目录的绝对路径：
 
 ```bash
 node scripts/prepare-apple-model-package.mjs --verify /path/to/model-package
@@ -119,7 +119,7 @@ Indexed is a local-first multimodal search application for explicitly added imag
 
 This is an early source preview for local-machine use. Build with Node.js 20+ using `npm ci && npm run build`, then run `./bin/indexed serve --open`. Configure an embedding backend before scanning. Local vector storage uses zvec; external embedding services receive the content you choose to process.
 
-The Apple Silicon backend uses Swift, Core ML, and MLX without a Python product dependency. B is the default; A is a GPU baseline and C/D are explicit private-ANE experiments. Real-model validation currently covers base M4 on macOS 26. The dedicated approximately 2.50 GiB WeMM model package is distributed separately; its download link is pending. Signed releases, automatic model downloads, and broader hardware validation are not yet available.
+The Apple Silicon backend uses Swift, Core ML, and MLX without a Python product dependency. B is the default; A is a GPU baseline and C/D are explicit private-ANE experiments. Real-model validation currently covers base M4 on macOS 26. The dedicated approximately 2.50 GiB WeMM model package is available separately on [ModelScope](https://modelscope.cn/models/xiaotianfotos/WeMM-Embedding-2B-Apple-Q8-G64). Preserve its directory layout, download actual LFS weights, and export files without Git metadata before verification. Signed releases, automatic model downloads, and broader hardware validation are not yet available.
 
 ## 许可证 / License
 
