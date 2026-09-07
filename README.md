@@ -16,12 +16,6 @@ Indexed 把主动添加的本机图片、视频、文档，以及在 YouTube / B
 
 ## 从源码启动
 
-需要 Node.js 20 或更新版本（当前 GitHub CI 使用 Node.js 24）。视频处理需要 FFmpeg；PDF 文本提取需要 Poppler。macOS 可先安装：
-
-```bash
-brew install ffmpeg poppler
-```
-
 获取源码并启动：
 
 ```bash
@@ -31,6 +25,8 @@ npm ci
 npm run build
 ./bin/indexed serve --open
 ```
+
+以上为源码运行方式，使用 Node.js 20 或更新版本。
 
 Dashboard 默认地址为 `http://127.0.0.1:18767`。首次启动后，先在“模型与数据库”完成 embedding 配置，再添加需要索引的素材目录。添加目录会开始扫描，可在“素材与扫描”中停止或关闭自动扫描。
 
@@ -42,7 +38,7 @@ Dashboard 默认地址为 `http://127.0.0.1:18767`。首次启动后，先在“
 
 当前真实模型验证设备为基础款 Apple M4 / macOS 26。其他芯片与系统版本尚需单独验证，尤其是编译后的 Core ML 模型与私有 ANE 路径。
 
-构建 helper 需要支持 Swift 6.3 的 Xcode / Command Line Tools：
+在 Indexed 源码目录中构建原生 helper：
 
 ```bash
 zsh native/apple-embedding/build_native_service.sh
@@ -90,6 +86,16 @@ CLI 示例：
 AI Agent 接口见 [Indexed Skill](skills/indexed/SKILL.md)。Skill 通过 CLI 调用应用服务，不承担应用运行时职责。
 
 ## 开发与数据边界
+
+<details>
+<summary>源码环境与按需依赖</summary>
+
+- 源码运行使用 Node.js 20+，当前 GitHub CI 使用 Node.js 24。
+- 视频处理使用 FFmpeg；带文本层的 PDF 提取使用 Poppler 的 `pdftotext`。这两个工具目前需要在本机另行准备，仅在使用对应功能时需要，纯文本检索无需安装。
+- Apple 原生 helper 的源码构建需要支持 Swift 6.3 的 Xcode / Command Line Tools。
+- 当前源码预览尚未提供统一打包这些依赖的安装程序。
+
+</details>
 
 应用代码使用 TypeScript；macOS helper 使用 Swift 与少量原生桥接。核心业务位于 `packages/core`，共享协议位于 `packages/contracts`，界面与 CLI 位于 `apps/`。
 
