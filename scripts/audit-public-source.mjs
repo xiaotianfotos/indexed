@@ -20,7 +20,7 @@ export function privatePath(file) {
   const name = parts.at(-1);
   if (parts.some(x => ['.data', '.indexed', 'node_modules', 'dist', '.build', '__pycache__', '.venv'].includes(x))) return true;
   if (file.startsWith('docs/') || file.startsWith('native/apple-embedding/results/')) return true;
-  if (/\.(?:md|markdown|mdx|rst|adoc)$/i.test(file) && !legal.test(name) && file !== 'skills/indexed/SKILL.md') return true;
+  if (/\.(?:md|markdown|mdx|rst|adoc)$/i.test(file) && !legal.test(name) && file !== 'README.md' && file !== 'skills/indexed/SKILL.md') return true;
   if (/^(?:config\.local\.json|secrets\.json|\.indexed-extension-key)$/.test(name)) return true;
   if (/^\.env(?:\.|$)/.test(name) && !/^\.env\.(?:example|sample|template)$/.test(name)) return true;
   return /\.(?:safetensors|sqlite3?|db|npz|pem|p12|pfx)$/i.test(name) || parts.some(x => /\.(?:mlmodelc|mlpackage)$/.test(x));

@@ -7,8 +7,8 @@ import test from 'node:test';
 import { auditRepository, inspectContent, privatePath } from '../audit-public-source.mjs';
 
 test('public surface excludes private documents and artifacts while retaining legal and functional files', () => {
-  for (const file of ['docs/plan.json', 'AGENTS.md', 'README.md', '.env.production', '.data/config.json', 'native/apple-embedding/results/run.json', 'model.safetensors', 'vision/foo.mlmodelc/weights/a.bin']) assert.equal(privatePath(file), true, file);
-  for (const file of ['LICENSE', 'NOTICE', 'native/THIRD_PARTY_NOTICES.md', 'skills/indexed/SKILL.md', '.github/workflows/ci.yml', '.env.example', 'src/main.ts']) assert.equal(privatePath(file), false, file);
+  for (const file of ['docs/plan.json', 'AGENTS.md', 'docs/README.md', 'packages/core/README.md', '.env.production', '.data/config.json', 'native/apple-embedding/results/run.json', 'model.safetensors', 'vision/foo.mlmodelc/weights/a.bin']) assert.equal(privatePath(file), true, file);
+  for (const file of ['README.md', 'LICENSE', 'NOTICE', 'native/THIRD_PARTY_NOTICES.md', 'skills/indexed/SKILL.md', '.github/workflows/ci.yml', '.env.example', 'src/main.ts']) assert.equal(privatePath(file), false, file);
 });
 
 test('scanner checks binary metadata and returns locations without exposing credential contents', () => {

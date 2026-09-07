@@ -15,8 +15,8 @@ config.local.json
 secrets.json
 .indexed-extension-key
 
-# Project documentation and benchmark reports stay local, including root
-# README/AGENTS and Markdown templates. Keep legal notices and the Skill entry
+# Internal documentation and benchmark reports stay local, including
+# AGENTS and Markdown templates. Keep the public root README, legal notices and Skill entry
 # point: those are required distribution metadata or functional interfaces.
 /docs/
 *.md
@@ -24,6 +24,7 @@ secrets.json
 *.mdx
 *.rst
 *.adoc
+!/README.md
 !LICENSE*
 !LICENCE*
 !COPYING*
