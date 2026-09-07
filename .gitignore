@@ -33,6 +33,8 @@ secrets.json
 !/skills/**/SKILL.md
 /native/apple-embedding/results/
 
-# CI and dependency automation are deferred; retain their drafts locally.
-/.github/workflows/
+# Publish only the selected CI and gated HomeRail review workflows.
+/.github/workflows/*
+!/.github/workflows/ci.yml
+!/.github/workflows/pr-review.yml
 /.github/dependabot.yml

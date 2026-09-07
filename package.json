@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "npm run typecheck && npm run build && npm test && npm run test:build-tools && npm run validate:build && npm run audit:runtime && npm run audit:hardcoding",
+    "check": "npm run typecheck && npm run build && npm test && npm run test:build-tools && npm run validate:build && npm run audit:runtime && npm run audit:hardcoding && npm run test:public-tools && npm run audit:public",
     "dev": "node scripts/build.mjs && node --import tsx apps/cli/src/index.ts serve",
     "test": "node --import tsx --test tests/*.test.ts",
     "test:browser": "npm run build && playwright test",
@@ -21,7 +21,10 @@
     "audit:runtime": "node scripts/audit-runtime-dependencies.mjs",
     "audit:hardcoding": "node scripts/audit-hardcoding.mjs",
     "test:build-tools": "node --test native/apple-embedding/tests/*.test.mjs",
-    "test:native": "tsc --noEmit -p native/apple-embedding/tests/tsconfig.json && node --import tsx --test native/apple-embedding/tests/*.test.ts"
+    "test:native": "tsc --noEmit -p native/apple-embedding/tests/tsconfig.json && node --import tsx --test native/apple-embedding/tests/*.test.ts",
+    "audit:public": "node scripts/audit-public-source.mjs",
+    "test:public-tools": "node --test scripts/tests/*.test.mjs",
+    "model:package": "node scripts/prepare-apple-model-package.mjs"
   },
   "engines": {
     "node": ">=20"

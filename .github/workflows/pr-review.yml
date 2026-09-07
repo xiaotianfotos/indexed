@@ -1,0 +1,102 @@
+name: Indexed PR Review
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Indexed pull request number to review
+        type: number
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: indexed-pr-review-${{ github.event.pull_request.number || inputs.pr }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: HomeRail PR Review for Indexed
+    # Enable only after a dedicated Indexed runner is registered and its stable
+    # HomeRail environment is configured. No credentials or host addresses here.
+    if: >-
+      vars.HOMERAIL_PR_REVIEW_ENABLED == 'true' &&
+      github.actor == github.repository_owner &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.pull_request.user.login == github.repository_owner &&
+        github.event.pull_request.draft == false &&
+        github.event.pull_request.head.repo.full_name == github.repository))
+    runs-on: [self-hosted, Linux, X64, indexed-pr-review]
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+      HOMERAIL_GITHUB_API_BASE_URL: ${{ github.api_url }}
+      HOMERAIL_PR_REVIEW_PROFILE_ID: indexed-pr-review-mixed
+    steps:
+      # Run only the trusted, deployed HomeRail adapter. Never check out or
+      # execute a PR's scripts on the durable self-hosted runner.
+      - name: Verify stable HomeRail runner
+        id: stable
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${HOMERAIL_STABLE_ROOT:-}"
+          test -n "${HOMERAIL_STABLE_HOME:-}"
+          test -n "${HOMERAIL_STABLE_MANAGER_URL:-}"
+          stable_release="$(readlink -f "$HOMERAIL_STABLE_ROOT/current")"
+          test -x "$stable_release/runtime/node"
+          test -f "$stable_release/homerail_cli/dist/cli.js"
+          test -f "$stable_release/assets/orchestrations/pr-review.yaml.template"
+          test -f "$stable_release/scripts/run-pr-review-stable-runner.sh"
+          echo "release=$stable_release" >> "$GITHUB_OUTPUT"
+          echo "node=$stable_release/runtime/node" >> "$GITHUB_OUTPUT"
+          echo "HOMERAIL_PR_REVIEW_ARTIFACT_DIR=$RUNNER_TEMP/indexed-pr-review-${{ github.run_id }}-${{ github.run_attempt }}" >> "$GITHUB_ENV"
+
+      - name: Resolve and validate immutable Indexed review input
+        id: input
+        env:
+          INPUT_PR: ${{ inputs.pr || github.event.pull_request.number }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          NODE_BIN: ${{ steps.stable.outputs.node }}
+        run: |
+          "$NODE_BIN" --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const repo = process.env.GITHUB_REPOSITORY;
+          const owner = process.env.GITHUB_REPOSITORY_OWNER;
+          const pr = Number(process.env.INPUT_PR);
+          if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo) || !Number.isSafeInteger(pr) || pr < 1) throw new Error('Invalid review input');
+          const response = await fetch(`${process.env.GITHUB_API_URL}/repos/${repo}/pulls/${pr}`, {
+            headers: { Authorization: `Bearer ${process.env.GH_TOKEN}`, Accept: 'application/vnd.github+json' },
+            signal: AbortSignal.timeout(30000),
+          });
+          if (!response.ok) throw new Error(`Cannot resolve PR: HTTP ${response.status}`);
+          const pull = await response.json();
+          if (pull.state !== 'open' || pull.draft || pull.user.login !== owner || pull.head.repo?.full_name !== repo || pull.base.repo?.full_name !== repo) throw new Error('Review requires an open, ready, owner-authored same-repository PR');
+          if (process.env.EXPECTED_HEAD && process.env.EXPECTED_HEAD !== pull.head.sha) throw new Error('PR changed since this event; request a new review');
+          const input = { repo, pr, base: pull.base.sha, head: pull.head.sha };
+          if (![input.base, input.head].every(x => /^[a-f0-9]{40}$/.test(x))) throw new Error('Invalid commit identity');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `json=${JSON.stringify(input)}\n`);
+          NODE
+
+      - name: Run the read-only three-model HomeRail review
+        id: review
+        env:
+          HOMERAIL_PR_REVIEW_INPUT: ${{ steps.input.outputs.json }}
+          ADAPTER: ${{ steps.stable.outputs.release }}/scripts/run-pr-review-stable-runner.sh
+        run: bash "$ADAPTER"
+
+      - name: Publish bounded review summary
+        if: always()
+        run: |
+          if [ -n "${HOMERAIL_PR_REVIEW_ARTIFACT_DIR:-}" ] && [ -s "$HOMERAIL_PR_REVIEW_ARTIFACT_DIR/pr-review.md" ]; then
+            cat "$HOMERAIL_PR_REVIEW_ARTIFACT_DIR/pr-review.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'No review conclusion was produced; inspect the runner and stable HomeRail run.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      # Keep raw handoffs, chats, infrastructure diagnostics and private profile
+      # details on the operator's host instead of uploading the artifact directory.
